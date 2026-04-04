@@ -1,8 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser } from '@/lib/auth/getUser'
 import InspectionClient from './InspectionClient'
 
 export default async function InspectionsPage() {
   const supabase = await createClient()
+  const currentUser = await getCurrentUser()
+  const role = currentUser?.role ?? 'employee'
   const today = new Date().toISOString().split('T')[0]
 
   const [{ data: inspections }, { data: departments }] = await Promise.all([
@@ -56,6 +59,7 @@ export default async function InspectionsPage() {
         inspections={enriched}
         departments={departments ?? []}
         today={today}
+        role={role}
       />
     </div>
   )

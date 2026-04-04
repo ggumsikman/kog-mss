@@ -30,11 +30,14 @@ export default function InspectionClient({
   inspections,
   departments,
   today,
+  role,
 }: {
   inspections: any[]
   departments: any[]
   today: string
+  role: 'admin' | 'manager' | 'employee'
 }) {
+  const canManage = role === 'admin' || role === 'manager'
   const router = useRouter()
   const [, startTransition] = useTransition()
 
@@ -144,10 +147,12 @@ export default function InspectionClient({
           <option value="all">전체 부서</option>
           {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
         </select>
-        <button onClick={() => setShowForm(true)}
-          className="ml-auto flex items-center gap-1.5 bg-[#1A2744] text-white text-sm font-semibold px-4 py-1.5 rounded-lg hover:bg-[#243560] transition-colors">
-          <Plus size={14} /> 검사 등록
-        </button>
+        {canManage && (
+          <button onClick={() => setShowForm(true)}
+            className="ml-auto flex items-center gap-1.5 bg-[#1A2744] text-white text-sm font-semibold px-4 py-1.5 rounded-lg hover:bg-[#243560] transition-colors">
+            <Plus size={14} /> 검사 등록
+          </button>
+        )}
       </div>
 
       {/* 카드 목록 */}
@@ -200,7 +205,7 @@ export default function InspectionClient({
       )}
 
       {/* 등록 모달 */}
-      {showForm && (
+      {canManage && showForm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-5 border-b border-gray-100">

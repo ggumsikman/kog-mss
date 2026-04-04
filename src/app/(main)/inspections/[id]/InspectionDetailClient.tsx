@@ -11,11 +11,14 @@ export default function InspectionDetailClient({
   inspectionId,
   legalCycleMonths,
   today,
+  role,
 }: {
   inspectionId: number
   legalCycleMonths: number
   today: string
+  role: 'admin' | 'manager' | 'employee'
 }) {
+  const canManage = role === 'admin' || role === 'manager'
   const router = useRouter()
   const [, startTransition] = useTransition()
   const [saving, setSaving] = useState(false)
@@ -85,6 +88,8 @@ export default function InspectionDetailClient({
   }
 
   const inputCls = 'w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400'
+
+  if (!canManage) return null
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">

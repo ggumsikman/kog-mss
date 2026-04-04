@@ -34,6 +34,7 @@ interface Props {
   departments: Department[]
   targetDate: string
   today: string
+  role: 'admin' | 'manager' | 'employee'
 }
 
 const LOG_TYPE_META: Record<LogType, { label: string; color: string; icon: React.ReactNode }> = {
@@ -52,9 +53,10 @@ function fmtDate(dateStr: string) {
   return d.toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' })
 }
 
-export default function WorklogClient({ logs: initLogs, users, departments, targetDate, today }: Props) {
+export default function WorklogClient({ logs: initLogs, users, departments, targetDate, today, role }: Props) {
   const router = useRouter()
   const [, startTransition] = useTransition()
+  const canManage = role === 'admin' || role === 'manager'
 
   // ── 날짜 네비 ────────────────────────────────────────────
   function goDate(date: string) {
@@ -419,13 +421,15 @@ export default function WorklogClient({ logs: initLogs, users, departments, targ
                         <MessageSquare size={14} />
                       </button>
                     )}
-                    <button
-                      onClick={() => deleteLog(log.id)}
-                      disabled={deletingId === log.id}
-                      className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50"
-                    >
-                      {deletingId === log.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
-                    </button>
+                    {canManage && (
+                      <button
+                        onClick={() => deleteLog(log.id)}
+                        disabled={deletingId === log.id}
+                        className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50"
+                      >
+                        {deletingId === log.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                      </button>
+                    )}
                   </div>
                 </div>
 

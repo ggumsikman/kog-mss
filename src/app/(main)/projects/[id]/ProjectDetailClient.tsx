@@ -30,9 +30,11 @@ interface Props {
   milestones: Milestone[]
   members: Member[]
   isDelayed: boolean
+  role: 'admin' | 'manager' | 'employee'
 }
 
-export default function ProjectDetailClient({ project, milestones: initMilestones, members, isDelayed }: Props) {
+export default function ProjectDetailClient({ project, milestones: initMilestones, members, isDelayed, role }: Props) {
+  const canManage = role === 'admin' || role === 'manager'
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
 
@@ -136,21 +138,21 @@ export default function ProjectDetailClient({ project, milestones: initMilestone
               <Flag size={14} className="text-blue-500" />
               진행률 및 상태
             </h2>
-            {!editingProgress ? (
+            {!editingProgress && canManage ? (
               <button
                 onClick={() => setEditingProgress(true)}
                 className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-blue-600 transition-colors"
               >
                 <Pencil size={12} /> 수정
               </button>
-            ) : (
+            ) : editingProgress ? (
               <button
                 onClick={() => { setEditingProgress(false); setProgressVal(project.progress_pct); setStatusVal(project.status) }}
                 className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-red-500 transition-colors"
               >
                 <X size={12} /> 취소
               </button>
-            )}
+            ) : null}
           </div>
 
           {editingProgress ? (
@@ -227,13 +229,15 @@ export default function ProjectDetailClient({ project, milestones: initMilestone
                 </span>
               )}
             </h2>
-            <button
-              onClick={() => setShowAddMs(v => !v)}
-              className="flex items-center gap-1.5 text-xs font-semibold text-white bg-[#1A2744] px-3 py-1.5 rounded-lg hover:bg-[#243560] transition-colors"
-            >
-              <Plus size={12} />
-              추가
-            </button>
+            {canManage && (
+              <button
+                onClick={() => setShowAddMs(v => !v)}
+                className="flex items-center gap-1.5 text-xs font-semibold text-white bg-[#1A2744] px-3 py-1.5 rounded-lg hover:bg-[#243560] transition-colors"
+              >
+                <Plus size={12} />
+                추가
+              </button>
+            )}
           </div>
 
           {/* 마일스톤 추가 폼 */}
@@ -333,16 +337,18 @@ export default function ProjectDetailClient({ project, milestones: initMilestone
                     </span>
 
                     {/* 삭제 */}
-                    <button
-                      onClick={() => deleteMilestone(ms.id)}
-                      disabled={deletingId === ms.id}
-                      className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-500 transition-all flex-shrink-0 disabled:opacity-50"
-                    >
-                      {deletingId === ms.id
-                        ? <Loader2 size={14} className="animate-spin" />
-                        : <Trash2 size={14} />
-                      }
-                    </button>
+                    {canManage && (
+                      <button
+                        onClick={() => deleteMilestone(ms.id)}
+                        disabled={deletingId === ms.id}
+                        className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-500 transition-all flex-shrink-0 disabled:opacity-50"
+                      >
+                        {deletingId === ms.id
+                          ? <Loader2 size={14} className="animate-spin" />
+                          : <Trash2 size={14} />
+                        }
+                      </button>
+                    )}
                   </div>
                 )
               })

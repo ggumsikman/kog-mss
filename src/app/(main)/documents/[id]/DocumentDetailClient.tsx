@@ -30,11 +30,14 @@ export default function DocumentDetailClient({
   doc,
   users,
   documentId,
+  role,
 }: {
   doc: any
   users: any[]
   documentId: number
+  role: 'admin' | 'manager' | 'employee'
 }) {
+  const canManage = role === 'admin' || role === 'manager'
   const router = useRouter()
   const [, startTransition] = useTransition()
   const [currentStatus, setCurrentStatus] = useState<DocStatus>(doc.status)
@@ -130,7 +133,7 @@ export default function DocumentDetailClient({
       </div>
 
       {/* 담당자 배정 */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+      {canManage && <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
         <h2 className="font-bold text-sm text-gray-800 mb-3 flex items-center gap-2">
           <User size={13} className="text-teal-500" /> 담당자 배정
         </h2>
@@ -153,8 +156,10 @@ export default function DocumentDetailClient({
         </button>
       </div>
 
+      }
+
       {/* 상태 변경 */}
-      {nextSteps.length > 0 && (
+      {canManage && nextSteps.length > 0 && (
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
           <h2 className="font-bold text-sm text-gray-800 mb-3">상태 변경</h2>
           <textarea

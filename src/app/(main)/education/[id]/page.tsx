@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser } from '@/lib/auth/getUser'
 import { notFound } from 'next/navigation'
 import { formatDate, calcDaysUntil } from '@/lib/utils'
 import { ArrowLeft, CalendarDays, MapPin, User, Clock, AlertTriangle, CheckCircle2 } from 'lucide-react'
@@ -12,6 +13,8 @@ export default async function EducationDetailPage({
 }) {
   const { id } = await params
   const supabase = await createClient()
+  const currentUser = await getCurrentUser()
+  const role = currentUser?.role ?? 'employee'
   const today = new Date().toISOString().split('T')[0]
 
   const [{ data: edu }, { data: targets }, { data: attendances }, { data: allUsers }] = await Promise.all([
@@ -162,6 +165,7 @@ export default async function EducationDetailPage({
         targetUsers={targetUsers}
         attendanceMap={attendanceMap}
         allUsers={allUsers ?? []}
+        role={role}
       />
     </div>
   )

@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser } from '@/lib/auth/getUser'
 import DocumentClient from './DocumentClient'
 
 export default async function DocumentsPage({
@@ -8,6 +9,8 @@ export default async function DocumentsPage({
 }) {
   const params = await searchParams
   const supabase = await createClient()
+  const currentUser = await getCurrentUser()
+  const role = currentUser?.role ?? 'employee'
   const today = new Date().toISOString().split('T')[0]
 
   let query = supabase
@@ -59,6 +62,7 @@ export default async function DocumentsPage({
         users={users ?? []}
         departments={departments ?? []}
         today={today}
+        role={role}
       />
     </div>
   )

@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser } from '@/lib/auth/getUser'
 import { notFound } from 'next/navigation'
 import { formatDate } from '@/lib/utils'
 import { ArrowLeft, Calendar, User, Building2, Archive, FileText } from 'lucide-react'
@@ -28,6 +29,8 @@ export default async function DocumentDetailPage({
 }) {
   const { id } = await params
   const supabase = await createClient()
+  const currentUser = await getCurrentUser()
+  const role = currentUser?.role ?? 'employee'
 
   const [{ data: doc }, { data: histories }, { data: users }] = await Promise.all([
     supabase
@@ -157,6 +160,7 @@ export default async function DocumentDetailPage({
             doc={doc}
             users={users ?? []}
             documentId={Number(id)}
+            role={role}
           />
         </div>
       </div>

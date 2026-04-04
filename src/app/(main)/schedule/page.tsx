@@ -1,8 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser } from '@/lib/auth/getUser'
 import ScheduleClient from './ScheduleClient'
 
 export default async function SchedulePage() {
   const supabase = await createClient()
+  const currentUser = await getCurrentUser()
+  const role = currentUser?.role ?? 'employee'
   const today = new Date()
   const thisMonth = today.getMonth() + 1 // 1~12
   const thisDay   = today.getDate()
@@ -57,6 +60,7 @@ export default async function SchedulePage() {
         schedules={enriched}
         currentMonth={thisMonth}
         currentYear={today.getFullYear()}
+        role={role}
       />
     </div>
   )

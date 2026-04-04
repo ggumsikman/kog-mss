@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser } from '@/lib/auth/getUser'
 import { notFound } from 'next/navigation'
 import { formatDate } from '@/lib/utils'
 import { ArrowLeft, Building2, Calendar, RotateCcw, ShieldCheck, AlertTriangle, Clock, FileText } from 'lucide-react'
@@ -18,6 +19,8 @@ export default async function InspectionDetailPage({
 }) {
   const { id } = await params
   const supabase = await createClient()
+  const currentUser = await getCurrentUser()
+  const role = currentUser?.role ?? 'employee'
   const today = new Date().toISOString().split('T')[0]
 
   const [{ data: ins }, { data: histories }] = await Promise.all([
@@ -160,6 +163,7 @@ export default async function InspectionDetailPage({
             inspectionId={Number(id)}
             legalCycleMonths={ins.legal_cycle_months}
             today={today}
+            role={role}
           />
         </div>
       </div>

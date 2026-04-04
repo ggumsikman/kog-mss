@@ -49,14 +49,17 @@ export default function HrClient({
   users,
   departments,
   today,
+  role,
 }: {
   events: HrEvent[]
   users: User[]
   departments: Department[]
   today: string
+  role: 'admin' | 'manager' | 'employee'
 }) {
   const router = useRouter()
   const [, startTransition] = useTransition()
+  const canManage = role === 'admin' || role === 'manager'
   const [events, setEvents] = useState<HrEvent[]>(initEvents)
 
   // ── 필터 ─────────────────────────────────────────────────
@@ -219,16 +222,18 @@ export default function HrClient({
           <option value="all">전체 부서</option>
           {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
         </select>
-        <div className="ml-auto">
-          <button onClick={() => setShowForm(v => !v)}
-            className="flex items-center gap-2 bg-[#1A2744] text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-[#243560] transition-colors">
-            <Plus size={15} /> 이벤트 등록
-          </button>
-        </div>
+        {canManage && (
+          <div className="ml-auto">
+            <button onClick={() => setShowForm(v => !v)}
+              className="flex items-center gap-2 bg-[#1A2744] text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-[#243560] transition-colors">
+              <Plus size={15} /> 이벤트 등록
+            </button>
+          </div>
+        )}
       </div>
 
       {/* ── 등록 폼 ─────────────────────────────────────── */}
-      {showForm && (
+      {canManage && showForm && (
         <div className="bg-blue-50 rounded-xl border border-blue-200 p-5 space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-bold text-gray-800">인사·복지 이벤트 등록</h3>
@@ -312,7 +317,7 @@ export default function HrClient({
                   }`}>
 
                   {/* 완료 토글 */}
-                  <button onClick={() => toggleStatus(ev)} disabled={togglingId === ev.id}
+                  <button onClick={() => canManage && toggleStatus(ev)} disabled={togglingId === ev.id || !canManage}
                     className="flex-shrink-0 transition-colors disabled:opacity-50">
                     {togglingId === ev.id
                       ? <Loader2 size={22} className="animate-spin text-gray-400" />
@@ -350,10 +355,12 @@ export default function HrClient({
                   {/* D-day + 삭제 */}
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <DdayBadge days={ev.days_until} status={ev.status} />
-                    <button onClick={() => deleteEvent(ev.id)} disabled={deletingId === ev.id}
-                      className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-all disabled:opacity-50">
-                      {deletingId === ev.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
-                    </button>
+                    {canManage && (
+                      <button onClick={() => deleteEvent(ev.id)} disabled={deletingId === ev.id}
+                        className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-all disabled:opacity-50">
+                        {deletingId === ev.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                      </button>
+                    )}
                   </div>
                 </div>
               )

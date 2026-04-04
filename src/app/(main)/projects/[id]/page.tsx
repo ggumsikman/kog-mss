@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser } from '@/lib/auth/getUser'
 import { notFound } from 'next/navigation'
 import { calcDelayDays, formatDate, getStatusColor } from '@/lib/utils'
 import { AlertTriangle, ArrowLeft, Calendar, User, Building2 } from 'lucide-react'
@@ -12,6 +13,8 @@ export default async function ProjectDetailPage({
 }) {
   const { id } = await params
   const supabase = await createClient()
+  const currentUser = await getCurrentUser()
+  const role = currentUser?.role ?? 'employee'
   const today = new Date().toISOString().split('T')[0]
 
   const [{ data: project }, { data: milestones }, { data: members }] = await Promise.all([
@@ -130,6 +133,7 @@ export default async function ProjectDetailPage({
         milestones={milestones ?? []}
         members={members ?? []}
         isDelayed={isDelayed}
+        role={role}
       />
     </div>
   )

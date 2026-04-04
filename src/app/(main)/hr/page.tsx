@@ -1,8 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser } from '@/lib/auth/getUser'
 import HrClient from './HrClient'
 
 export default async function HrPage() {
   const supabase = await createClient()
+  const currentUser = await getCurrentUser()
+  const role = currentUser?.role ?? 'employee'
   const today = new Date().toISOString().split('T')[0]
   const d30   = new Date(); d30.setDate(d30.getDate() + 30)
 
@@ -52,6 +55,7 @@ export default async function HrPage() {
         users={users ?? []}
         departments={departments ?? []}
         today={today}
+        role={role}
       />
     </div>
   )

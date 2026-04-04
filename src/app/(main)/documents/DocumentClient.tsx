@@ -54,14 +54,17 @@ export default function DocumentClient({
   users,
   departments,
   today,
+  role,
 }: {
   docs: Doc[]
   users: any[]
   departments: any[]
   today: string
+  role: 'admin' | 'manager' | 'employee'
 }) {
   const router = useRouter()
   const [, startTransition] = useTransition()
+  const canManage = role === 'admin' || role === 'manager'
   const [docs, setDocs] = useState<Doc[]>(initDocs)
 
   // ── 필터 ─────────────────────────────────────────────────
@@ -190,16 +193,18 @@ export default function DocumentClient({
             {c}
           </button>
         ))}
-        <div className="ml-auto">
-          <button onClick={() => setShowForm(v => !v)}
-            className="flex items-center gap-2 bg-[#1A2744] text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-[#243560] transition-colors">
-            <Plus size={15} /> 공문서 등록
-          </button>
-        </div>
+        {canManage && (
+          <div className="ml-auto">
+            <button onClick={() => setShowForm(v => !v)}
+              className="flex items-center gap-2 bg-[#1A2744] text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-[#243560] transition-colors">
+              <Plus size={15} /> 공문서 등록
+            </button>
+          </div>
+        )}
       </div>
 
       {/* ── 등록 폼 ─────────────────────────────────────── */}
-      {showForm && (
+      {canManage && showForm && (
         <div className="bg-blue-50 rounded-xl border border-blue-200 p-5 space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-bold text-gray-800">공문서 접수 등록</h3>

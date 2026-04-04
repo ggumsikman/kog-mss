@@ -13,13 +13,15 @@ interface Props {
   targetUsers: User[]
   attendanceMap: Record<number, any>
   allUsers: User[]
+  role: 'admin' | 'manager' | 'employee'
 }
 
 export default function AttendanceClient({
-  educationId, educationStatus, targetUsers, attendanceMap: initMap, allUsers
+  educationId, educationStatus, targetUsers, attendanceMap: initMap, allUsers, role
 }: Props) {
   const router = useRouter()
   const [, startTransition] = useTransition()
+  const canManage = role === 'admin' || role === 'manager'
   const [attMap, setAttMap] = useState<Record<number, any>>(initMap)
   const [togglingId, setTogglingId] = useState<number | null>(null)
 
@@ -100,12 +102,14 @@ export default function AttendanceClient({
             </span>
           )}
         </h2>
-        <button
-          onClick={() => setShowAdd(v => !v)}
-          className="flex items-center gap-1.5 text-xs font-semibold text-[#1A2744] border border-[#1A2744] px-3 py-1.5 rounded-lg hover:bg-[#1A2744] hover:text-white transition-colors"
-        >
-          <UserPlus size={12} /> 추가
-        </button>
+        {canManage && (
+          <button
+            onClick={() => setShowAdd(v => !v)}
+            className="flex items-center gap-1.5 text-xs font-semibold text-[#1A2744] border border-[#1A2744] px-3 py-1.5 rounded-lg hover:bg-[#1A2744] hover:text-white transition-colors"
+          >
+            <UserPlus size={12} /> 추가
+          </button>
+        )}
       </div>
 
       {/* 추가 폼 */}
@@ -157,8 +161,8 @@ export default function AttendanceClient({
                     <div key={user.id} className={`flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition-colors ${attended ? 'bg-green-50/30' : ''}`}>
                       {/* 참석 토글 */}
                       <button
-                        onClick={() => toggleAttendance(user.id)}
-                        disabled={togglingId === user.id || educationStatus === '취소'}
+                        onClick={() => canManage && toggleAttendance(user.id)}
+                        disabled={togglingId === user.id || educationStatus === '취소' || !canManage}
                         className="flex-shrink-0 transition-colors disabled:opacity-40"
                       >
                         {togglingId === user.id
@@ -196,7 +200,7 @@ export default function AttendanceClient({
           ))}
 
           {/* 전체 일괄 처리 */}
-          {educationStatus !== '취소' && totalCount > 0 && (
+          {canManage && educationStatus !== '취소' && totalCount > 0 && (
             <div className="px-5 py-3 border-t border-gray-100 flex gap-3">
               <button
                 onClick={async () => {

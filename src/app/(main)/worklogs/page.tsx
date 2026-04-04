@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser } from '@/lib/auth/getUser'
 import WorklogClient from './WorklogClient'
 
 export default async function WorklogsPage({
@@ -8,6 +9,8 @@ export default async function WorklogsPage({
 }) {
   const params = await searchParams
   const supabase = await createClient()
+  const currentUser = await getCurrentUser()
+  const role = currentUser?.role ?? 'employee'
   const today = new Date().toISOString().split('T')[0]
   const targetDate = params.date || today
 
@@ -53,6 +56,7 @@ export default async function WorklogsPage({
         departments={departments ?? []}
         targetDate={targetDate}
         today={today}
+        role={role}
       />
     </div>
   )

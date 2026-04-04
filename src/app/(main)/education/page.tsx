@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser } from '@/lib/auth/getUser'
 import { calcDaysUntil, formatDate } from '@/lib/utils'
 import EducationClient from './EducationClient'
 
@@ -9,6 +10,8 @@ export default async function EducationPage({
 }) {
   const params = await searchParams
   const supabase = await createClient()
+  const currentUser = await getCurrentUser()
+  const role = currentUser?.role ?? 'employee'
   const today = new Date().toISOString().split('T')[0]
 
   let query = supabase
@@ -71,6 +74,7 @@ export default async function EducationPage({
         educations={enriched}
         departments={departments ?? []}
         today={today}
+        role={role}
       />
     </div>
   )

@@ -58,13 +58,16 @@ export default function EducationClient({
   educations: initEds,
   departments,
   today,
+  role,
 }: {
   educations: Education[]
   departments: Department[]
   today: string
+  role: 'admin' | 'manager' | 'employee'
 }) {
   const router = useRouter()
   const [, startTransition] = useTransition()
+  const canManage = role === 'admin' || role === 'manager'
 
   // ── 필터 ─────────────────────────────────────────────────
   const [filterDept,   setFilterDept]   = useState<number | 'all'>('all')
@@ -185,18 +188,20 @@ export default function EducationClient({
           {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
         </select>
 
-        <div className="ml-auto">
-          <button
-            onClick={() => setShowForm(v => !v)}
-            className="flex items-center gap-2 bg-[#1A2744] text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-[#243560] transition-colors"
-          >
-            <Plus size={15} /> 교육 등록
-          </button>
-        </div>
+        {canManage && (
+          <div className="ml-auto">
+            <button
+              onClick={() => setShowForm(v => !v)}
+              className="flex items-center gap-2 bg-[#1A2744] text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-[#243560] transition-colors"
+            >
+              <Plus size={15} /> 교육 등록
+            </button>
+          </div>
+        )}
       </div>
 
       {/* ── 교육 등록 폼 ─────────────────────────────────── */}
-      {showForm && (
+      {canManage && showForm && (
         <div className="bg-blue-50 rounded-xl border border-blue-200 p-5 space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-bold text-gray-800">교육 일정 등록</h3>

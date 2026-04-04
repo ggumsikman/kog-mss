@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser } from '@/lib/auth/getUser'
 import { calcDelayDays, formatDate, getStatusColor } from '@/lib/utils'
 import { AlertTriangle, Plus, Filter } from 'lucide-react'
 import Link from 'next/link'
@@ -10,6 +11,9 @@ export default async function ProjectsPage({
 }) {
   const params = await searchParams
   const supabase = await createClient()
+  const currentUser = await getCurrentUser()
+  const role = currentUser?.role ?? 'employee'
+  const canManage = role === 'admin' || role === 'manager'
   const today = new Date().toISOString().split('T')[0]
 
   let query = supabase
@@ -39,13 +43,15 @@ export default async function ProjectsPage({
           <h1 className="text-xl font-black text-gray-900">프로젝트 관리</h1>
           <p className="text-sm text-gray-400 mt-0.5">총 {enriched.length}개 프로젝트</p>
         </div>
-        <Link
-          href="/projects/new"
-          className="flex items-center gap-2 bg-[#1A2744] text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-[#243560] transition-colors"
-        >
-          <Plus size={15} />
-          프로젝트 등록
-        </Link>
+        {canManage && (
+          <Link
+            href="/projects/new"
+            className="flex items-center gap-2 bg-[#1A2744] text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-[#243560] transition-colors"
+          >
+            <Plus size={15} />
+            프로젝트 등록
+          </Link>
+        )}
       </div>
 
       {/* 필터 */}

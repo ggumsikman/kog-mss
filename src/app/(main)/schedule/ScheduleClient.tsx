@@ -53,13 +53,16 @@ export default function ScheduleClient({
   schedules: initSchedules,
   currentMonth,
   currentYear,
+  role,
 }: {
   schedules: Schedule[]
   currentMonth: number
   currentYear: number
+  role: 'admin' | 'manager' | 'employee'
 }) {
   const router = useRouter()
   const [, startTransition] = useTransition()
+  const canManage = role === 'admin' || role === 'manager'
 
   // ── 뷰 모드 & 필터 ───────────────────────────────────────
   const [view,         setView]         = useState<'list' | 'calendar'>('list')
@@ -196,16 +199,18 @@ export default function ScheduleClient({
           </button>
         ))}
 
-        <div className="ml-auto">
-          <button onClick={() => setShowForm(v => !v)}
-            className="flex items-center gap-2 bg-[#1A2744] text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-[#243560] transition-colors">
-            <Plus size={15} /> 일정 등록
-          </button>
-        </div>
+        {canManage && (
+          <div className="ml-auto">
+            <button onClick={() => setShowForm(v => !v)}
+              className="flex items-center gap-2 bg-[#1A2744] text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-[#243560] transition-colors">
+              <Plus size={15} /> 일정 등록
+            </button>
+          </div>
+        )}
       </div>
 
       {/* ── 등록 폼 ─────────────────────────────────────── */}
-      {showForm && (
+      {canManage && showForm && (
         <div className="bg-blue-50 rounded-xl border border-blue-200 p-5 space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-bold text-gray-800">연간 일정 등록</h3>
@@ -371,12 +376,14 @@ export default function ScheduleClient({
                           ? <DdayBadge days={s.days_until} />
                           : null
                         }
-                        <button
-                          onClick={() => deleteSchedule(s.id)}
-                          className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-400 transition-all text-xs px-1.5 py-0.5 rounded"
-                        >
-                          ✕
-                        </button>
+                        {canManage && (
+                          <button
+                            onClick={() => deleteSchedule(s.id)}
+                            className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-400 transition-all text-xs px-1.5 py-0.5 rounded"
+                          >
+                            ✕
+                          </button>
+                        )}
                       </div>
                     </div>
                   ))}
