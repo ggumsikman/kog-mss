@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import {
   Plus, CheckCircle2, Circle, ChevronLeft, ChevronRight,
   Trash2, MessageSquare, X, Loader2, AlertCircle, Briefcase, Zap, Clock,
-  Car, UserX, Pencil, Check, Moon, Hammer,
+  Car, UserX, Pencil, Check, Moon, Hammer, FileBarChart2, Bell,
 } from 'lucide-react'
 
 // ── 타입 ────────────────────────────────────────────────
@@ -276,6 +276,24 @@ export default function WorklogClient({
 
   const isToday = targetDate === today
 
+  // ── 마감 시간 (KST 기준 실시간) ────────────────────────
+  const [nowMin, setNowMin] = useState<number>(() => {
+    const kst = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }))
+    return kst.getHours() * 60 + kst.getMinutes()
+  })
+  useEffect(() => {
+    const id = setInterval(() => {
+      const kst = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }))
+      setNowMin(kst.getHours() * 60 + kst.getMinutes())
+    }, 30_000)
+    return () => clearInterval(id)
+  }, [])
+  const NOTIFY_MIN  = 8 * 60        // 08:00
+  const DEADLINE_MIN = 8 * 60 + 30  // 08:30
+  const isBeforeNotify   = nowMin < NOTIFY_MIN
+  const isUrgentWindow   = nowMin >= NOTIFY_MIN && nowMin < DEADLINE_MIN
+  const isPastDeadline   = nowMin >= DEADLINE_MIN
+
   // ── 쉬는 날이고 특근 없으면 조기 반환 ───────────────────
   if (isRestDay && !specialWork) {
     return (
@@ -396,7 +414,42 @@ export default function WorklogClient({
           className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-500">
           <ChevronRight size={18} />
         </button>
+        {/* 보고서 버튼 */}
+        <a
+          href={`/worklogs/report?type=daily&date=${targetDate}`}
+          className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-[#1A2744] border border-gray-200 rounded-lg px-2.5 py-1.5 transition-colors hover:border-[#1A2744]"
+        >
+          <FileBarChart2 size={13} />
+          보고서
+        </a>
       </div>
+
+      {/* ── 8:30 마감 배너 (오늘 + 미작성자 있을 때) ─── */}
+      {isToday && unexcused.length > 0 && (
+        <div className={`rounded-xl px-5 py-3 flex items-center gap-3 ${
+          isPastDeadline
+            ? 'bg-red-600 text-white'
+            : isUrgentWindow
+              ? 'bg-orange-500 text-white'
+              : 'bg-blue-50 text-blue-800 border border-blue-200'
+        }`}>
+          <Bell size={16} className="flex-shrink-0" />
+          <div className="flex-1 min-w-0">
+            {isBeforeNotify && (
+              <p className="text-sm font-semibold">오늘 업무일지 마감: <strong>오전 8:30</strong> — 미작성자 {unexcused.length}명</p>
+            )}
+            {isUrgentWindow && (
+              <p className="text-sm font-bold">⏰ 마감 임박! 오전 8:30까지 업무일지를 작성해 주세요 — 미작성자 {unexcused.length}명</p>
+            )}
+            {isPastDeadline && (
+              <p className="text-sm font-bold">🔔 마감 초과 — 미작성자 {unexcused.length}명에게 알림이 발송되었습니다</p>
+            )}
+          </div>
+          <span className="text-xs opacity-80 flex-shrink-0">
+            마감 08:30
+          </span>
+        </div>
+      )}
 
       {/* ── 직원 근태 현황 ─────────────────────────────── */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
