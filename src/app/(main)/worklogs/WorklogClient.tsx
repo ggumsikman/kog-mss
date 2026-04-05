@@ -88,6 +88,8 @@ export default function WorklogClient({
   const router = useRouter()
   const [, startTransition] = useTransition()
   const canManage = isSample || role === 'admin' || role === 'manager'
+  // 과거 날짜: 업무일지 읽기 전용 (근태는 관리자가 소급 수정 가능)
+  const isPast = targetDate < today
 
   // ── 날짜 네비 ──────────────────────────────────────────
   function goDate(date: string) {
@@ -179,6 +181,7 @@ export default function WorklogClient({
 
   async function addLog() {
     if (!form.title.trim()) return
+    if (isPast) { alert('지난 날짜의 업무일지는 수정할 수 없습니다.'); return }
     if (isSample) { alert('샘플 모드입니다. 실제 저장은 되지 않습니다.'); return }
     setAdding(true)
     const supabase = createClient()
@@ -200,6 +203,7 @@ export default function WorklogClient({
   const [noteDraft, setNoteDraft]   = useState('')
 
   async function toggleAchieved(log: WorkLog) {
+    if (isPast) { alert('지난 날짜의 업무일지는 수정할 수 없습니다.'); return }
     if (isSample) { alert('샘플 모드입니다. 실제 저장은 되지 않습니다.'); return }
     setTogglingId(log.id)
     const supabase = createClient()
@@ -215,6 +219,7 @@ export default function WorklogClient({
   }
 
   async function saveNote(id: number) {
+    if (isPast) { alert('지난 날짜의 업무일지는 수정할 수 없습니다.'); return }
     if (isSample) { alert('샘플 모드입니다. 실제 저장은 되지 않습니다.'); return }
     const supabase = createClient()
     await supabase.from('work_logs').update({ note: noteDraft }).eq('id', id)
@@ -226,6 +231,7 @@ export default function WorklogClient({
   const [deletingId, setDeletingId] = useState<number | null>(null)
 
   async function deleteLog(id: number) {
+    if (isPast) { alert('지난 날짜의 업무일지는 수정할 수 없습니다.'); return }
     if (!confirm('업무를 삭제하시겠습니까?')) return
     if (isSample) { alert('샘플 모드입니다. 실제 저장은 되지 않습니다.'); return }
     setDeletingId(id)
@@ -256,15 +262,17 @@ export default function WorklogClient({
           <ChevronLeft size={18} />
         </button>
         <div className="flex items-center gap-3">
-          <input type="date" value={targetDate} max={today}
+          <input type="date" value={targetDate}
             onChange={e => goDate(e.target.value)}
             className="border-0 text-sm font-bold text-gray-800 bg-transparent focus:outline-none cursor-pointer"
           />
           <span className="text-sm text-gray-500">{fmtDate(targetDate)}</span>
           {isToday && <span className="text-xs font-bold bg-blue-600 text-white px-2 py-0.5 rounded-full">오늘</span>}
+          {targetDate > today && <span className="text-xs font-bold bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">미래</span>}
+          {isPast && <span className="text-xs font-bold bg-gray-200 text-gray-500 px-2 py-0.5 rounded-full">🔒 읽기 전용</span>}
         </div>
-        <button onClick={() => goDate(addDays(targetDate, 1))} disabled={targetDate >= today}
-          className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 disabled:opacity-30">
+        <button onClick={() => goDate(addDays(targetDate, 1))}
+          className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-500">
           <ChevronRight size={18} />
         </button>
       </div>
@@ -455,13 +463,15 @@ export default function WorklogClient({
             <option key={u.id} value={u.id}>{u.name} ({(u.departments as any)?.name})</option>
           ))}
         </select>
-        <div className="ml-auto">
-          <button onClick={() => setShowForm(v => !v)}
-            className="flex items-center gap-2 bg-[#1A2744] text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-[#243560] transition-colors">
-            <Plus size={15} />
-            업무 등록
-          </button>
-        </div>
+        {!isPast && (
+          <div className="ml-auto">
+            <button onClick={() => setShowForm(v => !v)}
+              className="flex items-center gap-2 bg-[#1A2744] text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-[#243560] transition-colors">
+              <Plus size={15} />
+              업무 등록
+            </button>
+          </div>
+        )}
       </div>
 
       {/* ── 업무 등록 폼 ──────────────────────────────── */}
@@ -531,16 +541,25 @@ export default function WorklogClient({
                 <div key={log.id} className={`group ${log.achieved ? 'bg-green-50/20' : ''}`}>
                   <div className="flex items-start gap-3 px-5 py-4">
 
-                    {/* 달성 체크 */}
-                    <button onClick={() => toggleAchieved(log)} disabled={togglingId === log.id}
-                      className="mt-0.5 flex-shrink-0 transition-colors disabled:opacity-50">
-                      {togglingId === log.id
-                        ? <Loader2 size={22} className="animate-spin text-gray-400" />
-                        : log.achieved
-                          ? <CheckCircle2 size={22} className="text-green-500" />
-                          : <Circle size={22} className="text-gray-300 hover:text-green-400" />
-                      }
-                    </button>
+                    {/* 달성 체크 (과거 날짜는 아이콘만 표시) */}
+                    {isPast ? (
+                      <div className="mt-0.5 flex-shrink-0">
+                        {log.achieved
+                          ? <CheckCircle2 size={22} className="text-green-400 opacity-60" />
+                          : <Circle size={22} className="text-gray-300 opacity-60" />
+                        }
+                      </div>
+                    ) : (
+                      <button onClick={() => toggleAchieved(log)} disabled={togglingId === log.id}
+                        className="mt-0.5 flex-shrink-0 transition-colors disabled:opacity-50">
+                        {togglingId === log.id
+                          ? <Loader2 size={22} className="animate-spin text-gray-400" />
+                          : log.achieved
+                            ? <CheckCircle2 size={22} className="text-green-500" />
+                            : <Circle size={22} className="text-gray-300 hover:text-green-400" />
+                        }
+                      </button>
+                    )}
 
                     {/* 내용 */}
                     <div className="flex-1 min-w-0">
@@ -597,22 +616,24 @@ export default function WorklogClient({
                       )}
                     </div>
 
-                    {/* 우측 액션 */}
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-                      {!log.achieved && noteEditId !== log.id && (
-                        <button onClick={() => { setNoteEditId(log.id); setNoteDraft(log.note || '') }}
-                          title="사유 입력"
-                          className="p-1.5 rounded-lg text-gray-300 hover:text-yellow-500 hover:bg-yellow-50 transition-colors">
-                          <MessageSquare size={14} />
-                        </button>
-                      )}
-                      {canManage && (
-                        <button onClick={() => deleteLog(log.id)} disabled={deletingId === log.id}
-                          className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50">
-                          {deletingId === log.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
-                        </button>
-                      )}
-                    </div>
+                    {/* 우측 액션 (과거 날짜 숨김) */}
+                    {!isPast && (
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                        {!log.achieved && noteEditId !== log.id && (
+                          <button onClick={() => { setNoteEditId(log.id); setNoteDraft(log.note || '') }}
+                            title="사유 입력"
+                            className="p-1.5 rounded-lg text-gray-300 hover:text-yellow-500 hover:bg-yellow-50 transition-colors">
+                            <MessageSquare size={14} />
+                          </button>
+                        )}
+                        {canManage && (
+                          <button onClick={() => deleteLog(log.id)} disabled={deletingId === log.id}
+                            className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50">
+                            {deletingId === log.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   {/* 미달성 경고 */}
