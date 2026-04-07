@@ -1,9 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser } from '@/lib/auth/getUser'
 import { SAMPLE_WORK_LOGS, SAMPLE_USERS } from '@/lib/sample-data'
-import { Printer, X } from 'lucide-react'
-import Link from 'next/link'
-import ReportPrintButton from './ReportPrintButton'
+import ReportHeader from './ReportHeader'
 
 // ── 날짜 범위 계산 ────────────────────────────────────────
 function getDateRange(type: string, date: string) {
@@ -134,46 +132,7 @@ export default async function ReportPage({
 
   return (
     <>
-      {/* ── 화면용 헤더 (인쇄 시 숨김) ── */}
-      <div className="print:hidden bg-white border-b border-gray-200 px-6 py-3 flex items-center gap-3 sticky top-0 z-50">
-        <Link href={`/worklogs${baseDate !== today ? `?date=${baseDate}` : ''}`}
-          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors">
-          <X size={16} />
-          닫기
-        </Link>
-        <div className="h-4 w-px bg-gray-200" />
-
-        {/* 보고서 유형 탭 */}
-        {(['daily', 'weekly', 'monthly'] as const).map(t => (
-          <Link
-            key={t}
-            href={`/worklogs/report?type=${t}&date=${baseDate}`}
-            className={`text-sm font-semibold px-3 py-1.5 rounded-lg transition-colors ${
-              type === t
-                ? 'bg-[#1A2744] text-white'
-                : 'text-gray-500 hover:bg-gray-100'
-            }`}
-          >
-            {t === 'daily' ? '당일' : t === 'weekly' ? '주간' : '월간'}
-          </Link>
-        ))}
-
-        <input
-          type={type === 'monthly' ? 'month' : 'date'}
-          defaultValue={type === 'monthly' ? baseDate.slice(0, 7) : baseDate}
-          onChange={() => {}}
-          className="text-sm border border-gray-200 rounded-lg px-2 py-1 focus:outline-none"
-          onInput={(e) => {
-            const v = (e.target as HTMLInputElement).value
-            const d = type === 'monthly' ? v + '-01' : v
-            if (d) window.location.href = `/worklogs/report?type=${type}&date=${d}`
-          }}
-        />
-
-        <div className="ml-auto">
-          <ReportPrintButton />
-        </div>
-      </div>
+      <ReportHeader type={type} baseDate={baseDate} today={today} />
 
       {/* ── 인쇄 본문 ── */}
       <div className="max-w-4xl mx-auto p-8 print:p-0 print:max-w-none">
