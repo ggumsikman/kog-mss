@@ -46,7 +46,7 @@ export default async function InspectionsPage() {
   const urgentCount  = enriched.filter((i: any) => i.status === '임박').length
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
+    <div className="p-4 lg:p-6 max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div>
           <h1 className="text-xl font-black text-gray-900">정기검사 관리</h1>

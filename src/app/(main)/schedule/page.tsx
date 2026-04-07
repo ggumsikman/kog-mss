@@ -51,7 +51,7 @@ export default async function SchedulePage() {
   const urgentCount = enriched.filter((s: any) => s.days_until <= 30 && s.days_until >= 0).length
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div className="p-4 lg:p-6 max-w-6xl mx-auto">
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div>
           <h1 className="text-xl font-black text-gray-900">연간 일정 스케줄</h1>

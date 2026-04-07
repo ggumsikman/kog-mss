@@ -116,7 +116,8 @@ export default function AdminClient({
 
       {/* 사용자 목록 */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full text-sm min-w-[700px]">
           <thead>
             <tr className="border-b border-gray-100 bg-gray-50">
               <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500">이름 / 직책</th>
@@ -189,6 +190,7 @@ export default function AdminClient({
             ))}
           </tbody>
         </table>
+        </div>
         {users.length === 0 && (
           <div className="text-center py-12 text-gray-400 text-sm">등록된 사용자가 없습니다</div>
         )}

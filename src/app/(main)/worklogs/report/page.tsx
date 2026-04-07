@@ -135,10 +135,10 @@ export default async function ReportPage({
       <ReportHeader type={type} baseDate={baseDate} today={today} />
 
       {/* ── 인쇄 본문 ── */}
-      <div className="max-w-4xl mx-auto p-8 print:p-0 print:max-w-none">
+      <div className="max-w-4xl mx-auto p-4 lg:p-8 print:p-0 print:max-w-none">
 
         {/* 회사 헤더 + 결재란 */}
-        <div className="flex items-start justify-between mb-6 pb-5 border-b-2 border-gray-800">
+        <div className="flex flex-col sm:flex-row items-start justify-between mb-6 pb-5 border-b-2 border-gray-800 gap-4">
           <div>
             <p className="text-xs font-semibold text-gray-400 tracking-widest uppercase mb-1">KOG International</p>
             <h1 className="text-2xl font-black text-gray-900">{title}</h1>
@@ -170,7 +170,7 @@ export default async function ReportPage({
         </div>
 
         {/* 요약 KPI */}
-        <div className="grid grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           {[
             { label: '총 업무', value: total, unit: '건', color: 'text-gray-800' },
             { label: '달성', value: achieved, unit: '건', color: 'text-green-600' },

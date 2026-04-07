@@ -48,7 +48,7 @@ export default async function ProjectsPage({
   const statuses = ['전체', '진행중', '지연', '완료', '보류']
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div className="p-4 lg:p-6 max-w-6xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-xl font-black text-gray-900">프로젝트 관리</h1>
@@ -91,7 +91,8 @@ export default async function ProjectsPage({
 
       {/* 프로젝트 테이블 */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full text-sm min-w-[700px]">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-100">
               <th className="text-left px-5 py-3 font-semibold text-gray-600 text-xs">프로젝트명</th>
@@ -157,6 +158,7 @@ export default async function ProjectsPage({
             )}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   )

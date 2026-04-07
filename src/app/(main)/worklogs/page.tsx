@@ -108,7 +108,7 @@ export default async function WorklogsPage({
   const pct   = total > 0 ? Math.round(done / total * 100) : 0
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
+    <div className="p-4 lg:p-6 max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div>
           <h1 className="text-xl font-black text-gray-900">업무일지 · 근태</h1>

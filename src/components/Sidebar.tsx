@@ -1,10 +1,12 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import {
   LayoutDashboard, ClipboardList, GraduationCap, CalendarDays,
   Users, FileText, ShieldCheck, Building2, LogOut, Settings,
+  Menu, X,
 } from 'lucide-react'
 
 const navItems = [
@@ -31,6 +33,22 @@ export default function Sidebar({
 }) {
   const pathname = usePathname()
   const router   = useRouter()
+  const [mobileOpen, setMobileOpen] = useState(false)
+
+  // Close mobile sidebar on route change
+  useEffect(() => {
+    setMobileOpen(false)
+  }, [pathname])
+
+  // Prevent body scroll when mobile sidebar is open
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => { document.body.style.overflow = '' }
+  }, [mobileOpen])
 
   async function handleLogout() {
     if (isSample) {
@@ -42,12 +60,21 @@ export default function Sidebar({
     router.refresh()
   }
 
-  return (
-    <aside className="w-56 min-h-screen flex flex-col" style={{ background: '#1A2744' }}>
+  const sidebarContent = (
+    <>
       {/* 로고 */}
-      <div className="px-5 py-6 border-b border-white/10">
-        <p className="text-xs font-semibold text-white/40 tracking-widest uppercase mb-1">KOG International</p>
-        <h1 className="text-white font-bold text-base leading-tight">경영관리<br />시스템</h1>
+      <div className="px-5 py-6 border-b border-white/10 flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-white/40 tracking-widest uppercase mb-1">KOG International</p>
+          <h1 className="text-white font-bold text-base leading-tight">경영관리<br />시스템</h1>
+        </div>
+        {/* Mobile close button */}
+        <button
+          onClick={() => setMobileOpen(false)}
+          className="lg:hidden p-1.5 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+        >
+          <X size={20} />
+        </button>
       </div>
 
       {/* 메뉴 */}
@@ -94,6 +121,47 @@ export default function Sidebar({
           로그아웃
         </button>
       </div>
-    </aside>
+    </>
+  )
+
+  return (
+    <>
+      {/* Mobile top bar */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-4 py-3" style={{ background: '#1A2744' }}>
+        <div className="flex items-center gap-2">
+          <p className="text-xs font-semibold text-white/60 tracking-wider uppercase">KOG</p>
+          <h1 className="text-white font-bold text-sm">경영관리 시스템</h1>
+        </div>
+        <button
+          onClick={() => setMobileOpen(true)}
+          className="p-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+        >
+          <Menu size={22} />
+        </button>
+      </div>
+
+      {/* Desktop sidebar */}
+      <aside className="hidden lg:flex w-56 min-h-screen flex-col" style={{ background: '#1A2744' }}>
+        {sidebarContent}
+      </aside>
+
+      {/* Mobile overlay */}
+      {mobileOpen && (
+        <div className="lg:hidden fixed inset-0 z-50">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setMobileOpen(false)}
+          />
+          {/* Sidebar panel */}
+          <aside
+            className="absolute left-0 top-0 bottom-0 w-64 flex flex-col"
+            style={{ background: '#1A2744' }}
+          >
+            {sidebarContent}
+          </aside>
+        </div>
+      )}
+    </>
   )
 }

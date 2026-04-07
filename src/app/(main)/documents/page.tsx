@@ -61,7 +61,7 @@ export default async function DocumentsPage({
   const overdueCount  = enriched.filter((d: any) => ['접수', '처리중'].includes(d.status) && d.days_since >= 3).length
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
+    <div className="p-4 lg:p-6 max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div>
           <h1 className="text-xl font-black text-gray-900">공문서 관리</h1>

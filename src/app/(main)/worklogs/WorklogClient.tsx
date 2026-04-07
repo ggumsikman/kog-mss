@@ -300,22 +300,22 @@ export default function WorklogClient({
     return (
       <div className="space-y-4">
         {/* 날짜 네비 */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 px-5 py-3 flex items-center justify-between">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 px-3 sm:px-5 py-3 flex items-center justify-between">
           <button onClick={() => goDate(addDays(targetDate, -1))}
-            className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-500">
+            className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 flex-shrink-0">
             <ChevronLeft size={18} />
           </button>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap justify-center min-w-0">
             <input type="date" value={targetDate}
               onChange={e => goDate(e.target.value)}
               className="border-0 text-sm font-bold text-gray-800 bg-transparent focus:outline-none cursor-pointer"
             />
-            <span className="text-sm text-gray-500">{fmtDate(targetDate)}</span>
+            <span className="text-sm text-gray-500 hidden sm:inline">{fmtDate(targetDate)}</span>
             {isToday && <span className="text-xs font-bold bg-blue-600 text-white px-2 py-0.5 rounded-full">오늘</span>}
             <span className="text-xs font-bold bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">{restLabel}</span>
           </div>
           <button onClick={() => goDate(addDays(targetDate, 1))}
-            className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-500">
+            className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 flex-shrink-0">
             <ChevronRight size={18} />
           </button>
         </div>
@@ -380,17 +380,17 @@ export default function WorklogClient({
     <div className="space-y-4">
 
       {/* ── 날짜 네비 ─────────────────────────────────── */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 px-5 py-3 flex items-center justify-between">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 px-3 sm:px-5 py-3 flex items-center justify-between">
         <button onClick={() => goDate(addDays(targetDate, -1))}
-          className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-500">
+          className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 flex-shrink-0">
           <ChevronLeft size={18} />
         </button>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap justify-center min-w-0">
           <input type="date" value={targetDate}
             onChange={e => goDate(e.target.value)}
             className="border-0 text-sm font-bold text-gray-800 bg-transparent focus:outline-none cursor-pointer"
           />
-          <span className="text-sm text-gray-500">{fmtDate(targetDate)}</span>
+          <span className="text-sm text-gray-500 hidden sm:inline">{fmtDate(targetDate)}</span>
           {isToday && <span className="text-xs font-bold bg-blue-600 text-white px-2 py-0.5 rounded-full">오늘</span>}
           {targetDate > today && <span className="text-xs font-bold bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">미래</span>}
           {isPast && <span className="text-xs font-bold bg-gray-200 text-gray-500 px-2 py-0.5 rounded-full">🔒 읽기 전용</span>}
@@ -398,7 +398,8 @@ export default function WorklogClient({
           {isRestDay && specialWork && (
             <span className="text-xs font-bold bg-orange-100 text-orange-700 border border-orange-200 px-2 py-0.5 rounded-full flex items-center gap-1">
               <Hammer size={10} />
-              특근 — {specialWork.reason}
+              <span className="hidden sm:inline">특근 — {specialWork.reason}</span>
+              <span className="sm:hidden">특근</span>
               {canManage && (
                 <button onClick={removeSpecialWorkday} className="ml-0.5 hover:text-red-600 transition-colors" title="특근 취소">
                   <X size={10} />
@@ -412,7 +413,7 @@ export default function WorklogClient({
           )}
         </div>
         <button onClick={() => goDate(addDays(targetDate, 1))}
-          className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-500">
+          className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 flex-shrink-0">
           <ChevronRight size={18} />
         </button>
       </div>

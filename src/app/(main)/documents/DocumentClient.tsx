@@ -322,7 +322,8 @@ export default function DocumentClient({
             <button onClick={() => setShowForm(true)} className="mt-2 text-xs text-blue-500 hover:underline">+ 공문서 등록하기</button>
           </div>
         ) : (
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[700px]">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-100">
                 <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500">문서 제목</th>
@@ -385,6 +386,7 @@ export default function DocumentClient({
               })}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </div>

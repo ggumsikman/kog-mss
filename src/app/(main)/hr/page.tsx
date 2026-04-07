@@ -52,7 +52,7 @@ export default async function HrPage() {
   const overdueCount = enriched.filter((e: any) => e.days_until < 0  && e.status === '대기').length
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
+    <div className="p-4 lg:p-6 max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div>
           <h1 className="text-xl font-black text-gray-900">인사·복지 관리</h1>
