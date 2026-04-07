@@ -152,19 +152,17 @@ export default async function ReportPage({
               <p>생성일시</p>
               <p className="font-medium text-gray-600">{generatedAt}</p>
             </div>
-            {/* 결재란 */}
-            <table className="border-collapse border border-gray-400 text-center text-xs" style={{ minWidth: 140 }}>
-              <thead>
-                <tr>
-                  <th rowSpan={2} className="border border-gray-400 px-2 py-1 bg-gray-50 font-bold text-gray-700 align-middle w-8" style={{ writingMode: 'vertical-lr', letterSpacing: '0.3em' }}>결재</th>
-                  <th className="border border-gray-400 px-4 py-1 bg-gray-50 font-semibold text-gray-600">담당</th>
-                  <th className="border border-gray-400 px-4 py-1 bg-gray-50 font-semibold text-gray-600">대표</th>
-                </tr>
-              </thead>
+            {/* 결재란 (인쇄 시에만 표시) */}
+            <table className="hidden print:table border-collapse border-2 border-gray-800 text-center text-xs" style={{ minWidth: 160 }}>
               <tbody>
                 <tr>
-                  <td className="border border-gray-400 h-14"></td>
-                  <td className="border border-gray-400 h-14"></td>
+                  <td rowSpan={2} className="border-2 border-gray-800 px-1.5 w-7 font-bold text-gray-800 align-middle text-sm" style={{ writingMode: 'vertical-lr', letterSpacing: '0.5em' }}>결재</td>
+                  <td className="border-2 border-gray-800 px-5 py-1 font-semibold text-gray-700">담당</td>
+                  <td className="border-2 border-gray-800 px-5 py-1 font-semibold text-gray-700">대표</td>
+                </tr>
+                <tr>
+                  <td className="border-2 border-gray-800 h-16 w-20"></td>
+                  <td className="border-2 border-gray-800 h-16 w-20"></td>
                 </tr>
               </tbody>
             </table>
