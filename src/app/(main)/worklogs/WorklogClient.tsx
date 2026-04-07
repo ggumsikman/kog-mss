@@ -683,12 +683,6 @@ export default function WorklogClient({
                 <option key={u.id} value={u.id}>{u.name} ({(u.departments as any)?.name})</option>
               ))}
             </select>
-            <label className="flex items-center gap-1.5 text-sm text-gray-600 cursor-pointer">
-              <input type="checkbox" checked={form.is_planned}
-                onChange={e => setForm(f => ({ ...f, is_planned: e.target.checked }))}
-                className="rounded" />
-              사전 계획 업무
-            </label>
             <button onClick={addLog} disabled={adding || !form.title.trim()}
               className="ml-auto flex items-center gap-1.5 bg-blue-600 text-white text-sm font-semibold px-5 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50">
               {adding ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
@@ -742,8 +736,8 @@ export default function WorklogClient({
                           {LOG_TYPE_META[log.log_type].icon}
                           {log.log_type}
                         </span>
-                        {!log.is_planned && (
-                          <span className="text-xs text-orange-500 bg-orange-50 px-1.5 py-0.5 rounded">비계획</span>
+                        {log.log_type === '돌발업무' && (
+                          <span className="text-xs text-orange-500 bg-orange-50 px-1.5 py-0.5 rounded">돌발</span>
                         )}
                         <span className="text-xs text-gray-400">{log.users?.name} · {log.users?.departments?.name}</span>
                         {/* 근태 뱃지 */}
@@ -811,7 +805,7 @@ export default function WorklogClient({
                   </div>
 
                   {/* 미달성 경고 */}
-                  {!log.achieved && log.is_planned && !isToday && (
+                  {!log.achieved && log.log_type !== '돌발업무' && !isToday && (
                     <div className="mx-5 mb-3 flex items-center gap-1.5 text-xs text-red-500 bg-red-50 rounded-lg px-3 py-2">
                       <AlertCircle size={12} />
                       계획 업무 미달성 — 사유를 기록해 주세요
