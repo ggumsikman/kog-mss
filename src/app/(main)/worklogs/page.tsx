@@ -71,7 +71,7 @@ export default async function WorklogsPage({
           .order('created_at', { ascending: true }),
         supabase
           .from('users')
-          .select('id, name, position, department_id, departments(name)')
+          .select('id, name, position')
           .eq('is_active', true)
           .neq('role', 'admin')
           .order('name'),
@@ -92,7 +92,7 @@ export default async function WorklogsPage({
       // 쉬는 날인데 특근 아닌 경우: users만 fetch (특근 등록 폼에서 필요)
       const { data: usersData } = await supabase
         .from('users')
-        .select('id, name, position, department_id, departments(name)')
+        .select('id, name, position')
         .eq('is_active', true)
         .neq('role', 'admin')
         .order('name')

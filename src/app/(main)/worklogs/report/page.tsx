@@ -71,14 +71,15 @@ export default async function ReportPage({
     const supabase = await createClient()
     const [{ data: logsData }, { data: usersData }] = await Promise.all([
       supabase.from('work_logs')
-        .select('*, users(id, name, position, department_id)')
+        .select('*, users(id, name, position)')
         .gte('log_date', start)
         .lte('log_date', end)
         .order('log_date', { ascending: true })
         .order('created_at', { ascending: true }),
       supabase.from('users')
-        .select('id, name, position, department_id')
+        .select('id, name, position')
         .eq('is_active', true)
+        .neq('role', 'admin')
         .order('name'),
     ])
     logs  = logsData  ?? []
@@ -211,7 +212,7 @@ export default async function ReportPage({
         {/* 부서별 달성률 */}
         {Object.keys(deptStats).length > 0 && (
           <div className="mb-6">
-            <h2 className="text-sm font-bold text-gray-700 mb-3 pb-2 border-b border-gray-100">부서별 달성률</h2>
+            <h2 className="text-sm font-bold text-gray-700 mb-3 pb-2 border-b border-gray-100">직책별 달성률</h2>
             <div className="grid grid-cols-2 gap-3">
               {Object.values(deptStats).map(({ name, total: dt, done }) => {
                 const p = dt > 0 ? Math.round(done / dt * 100) : 0
