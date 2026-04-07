@@ -137,7 +137,7 @@ export default async function ReportPage({
       {/* ── 인쇄 본문 ── */}
       <div className="max-w-4xl mx-auto p-8 print:p-0 print:max-w-none">
 
-        {/* 회사 헤더 */}
+        {/* 회사 헤더 + 결재란 */}
         <div className="flex items-start justify-between mb-6 pb-5 border-b-2 border-gray-800">
           <div>
             <p className="text-xs font-semibold text-gray-400 tracking-widest uppercase mb-1">KOG International</p>
@@ -147,9 +147,27 @@ export default async function ReportPage({
               {isSample && <span className="ml-2 text-xs text-amber-600 font-bold">[샘플 데이터]</span>}
             </p>
           </div>
-          <div className="text-right text-xs text-gray-400">
-            <p>생성일시</p>
-            <p className="font-medium text-gray-600">{generatedAt}</p>
+          <div className="flex items-start gap-4">
+            <div className="text-right text-xs text-gray-400 mt-1">
+              <p>생성일시</p>
+              <p className="font-medium text-gray-600">{generatedAt}</p>
+            </div>
+            {/* 결재란 */}
+            <table className="border-collapse border border-gray-400 text-center text-xs" style={{ minWidth: 140 }}>
+              <thead>
+                <tr>
+                  <th rowSpan={2} className="border border-gray-400 px-2 py-1 bg-gray-50 font-bold text-gray-700 align-middle w-8" style={{ writingMode: 'vertical-lr', letterSpacing: '0.3em' }}>결재</th>
+                  <th className="border border-gray-400 px-4 py-1 bg-gray-50 font-semibold text-gray-600">담당</th>
+                  <th className="border border-gray-400 px-4 py-1 bg-gray-50 font-semibold text-gray-600">대표</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td className="border border-gray-400 h-14"></td>
+                  <td className="border border-gray-400 h-14"></td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
 
@@ -249,18 +267,6 @@ export default async function ReportPage({
           </div>
         )}
 
-        {/* 보고서 하단 서명란 (인쇄용) */}
-        <div className="hidden print:block mt-10 pt-6 border-t-2 border-gray-800">
-          <div className="grid grid-cols-3 gap-8 text-center">
-            {['작성', '검토', '결재'].map(role => (
-              <div key={role} className="border border-gray-300 rounded-lg p-4 h-20 flex flex-col justify-between">
-                <p className="text-xs font-semibold text-gray-500">{role}</p>
-                <div />
-                <p className="text-xs text-gray-400">(인)</p>
-              </div>
-            ))}
-          </div>
-        </div>
 
       </div>
     </>
