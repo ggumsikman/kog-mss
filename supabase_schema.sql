@@ -212,6 +212,25 @@ INSERT INTO departments (name, code) VALUES
   ('품질', 'QA'),
   ('영업', 'SLS');
 
+-- ── Module 7: 근태 관리 ──────────────────────────────────
+
+CREATE TABLE attendance_records (
+  id          SERIAL PRIMARY KEY,
+  user_id     INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  date        DATE NOT NULL,
+  type        VARCHAR(20) NOT NULL,  -- '연차','반차오전','반차오후','외근','출장','재택','병가','기타'
+  note        TEXT,
+  created_at  TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(user_id, date)
+);
+
+CREATE TABLE special_workdays (
+  date    DATE PRIMARY KEY,
+  reason  VARCHAR(200)
+);
+
+-- ── Seed Data ──────────────────────────────────────────
+
 INSERT INTO users (name, email, department_id, position, role, joined_at) VALUES
   ('관리자', 'admin@kog.co.kr', 1, '팀장', 'admin', '2020-01-01'),
   ('김생산', 'kim@kog.co.kr', 2, '과장', 'manager', '2021-03-15'),

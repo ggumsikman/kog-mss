@@ -104,6 +104,17 @@ export interface HrEvent {
   days_until_due?: number
 }
 
+export type AttendanceType = '연차' | '반차오전' | '반차오후' | '외근' | '출장' | '재택' | '병가' | '기타'
+
+export interface AttendanceRecord {
+  id: number
+  user_id: number
+  date: string
+  type: AttendanceType
+  note: string
+  users?: User
+}
+
 export interface AnnualSchedule {
   id: number
   title: string

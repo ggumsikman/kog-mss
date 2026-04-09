@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import {
   LayoutDashboard, ClipboardList, FileText, GraduationCap, CalendarDays,
   Users, Building2, ShieldCheck, LogOut, Settings, Bell, Network,
-  Menu, X, ChevronDown, FolderOpen, Heart, BarChart3, Briefcase,
+  Menu, X, ChevronDown, FolderOpen, Heart, BarChart3, Briefcase, CalendarCheck,
 } from 'lucide-react'
 
 interface NavGroup {
@@ -22,6 +22,7 @@ const navGroups: NavGroup[] = [
     items: [
       { href: '/hr/employees', label: '직원 관리', icon: Users },
       { href: '/hr/org-chart', label: '조직도', icon: Network },
+      { href: '/hr/attendance', label: '근태 관리', icon: CalendarCheck },
       { href: '/hr/welfare', label: '복지 관리', icon: Heart },
     ],
   },

@@ -136,10 +136,24 @@ export const SAMPLE_WORK_LOGS = [
   // 정수호 차장 – 0건 (연차)
 ]
 
-// 근태 기록 (2026-04-05 기준)
+// 근태 기록 (2026년 4월 기준)
 export const SAMPLE_ATTENDANCE = [
   { id: 1, user_id: 3, date: '2026-04-05', type: '외근', note: '협력사 방문 — (주)한국부품' },
   { id: 2, user_id: 5, date: '2026-04-05', type: '연차', note: '' },
+  // 4월 추가 근태 데이터
+  { id: 3, user_id: 1, date: '2026-04-01', type: '출장', note: '본사 회의 참석' },
+  { id: 4, user_id: 2, date: '2026-04-02', type: '반차오후', note: '개인 사유' },
+  { id: 5, user_id: 4, date: '2026-04-03', type: '외근', note: '거래처 미팅' },
+  { id: 6, user_id: 3, date: '2026-04-07', type: '연차', note: '' },
+  { id: 7, user_id: 1, date: '2026-04-08', type: '재택', note: '보고서 작성' },
+  { id: 8, user_id: 2, date: '2026-04-09', type: '병가', note: '감기' },
+  { id: 9, user_id: 4, date: '2026-04-10', type: '출장', note: '대한자동차 방문' },
+  { id: 10, user_id: 1, date: '2026-04-14', type: '외근', note: '협력사 점검' },
+  { id: 11, user_id: 3, date: '2026-04-15', type: '반차오전', note: '병원' },
+  { id: 12, user_id: 5, date: '2026-04-16', type: '연차', note: '' },
+  { id: 13, user_id: 2, date: '2026-04-21', type: '외근', note: '품질 현장 점검' },
+  { id: 14, user_id: 4, date: '2026-04-22', type: '연차', note: '' },
+  { id: 15, user_id: 1, date: '2026-04-23', type: '출장', note: '해외 바이어 미팅' },
 ]
 
 // days_until relative to 2026-04-05
