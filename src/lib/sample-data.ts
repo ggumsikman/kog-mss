@@ -6,11 +6,11 @@ export const SAMPLE_DEPARTMENTS = [
 ]
 
 export const SAMPLE_USERS = [
-  { id: 1, name: '김철수', position: '부장', department_id: 1, joined_at: '2000-03-01', departments: { name: '생산부' } },
-  { id: 2, name: '이영희', position: '과장', department_id: 2, joined_at: '2015-08-01', departments: { name: '품질부' } },
-  { id: 3, name: '박민준', position: '대리', department_id: 1, joined_at: '2023-04-10', departments: { name: '생산부' } },
-  { id: 4, name: '최지현', position: '사원', department_id: 3, joined_at: '2026-03-02', departments: { name: '영업부' } },
-  { id: 5, name: '정수호', position: '차장', department_id: 4, joined_at: '2010-07-15', departments: { name: '관리부' } },
+  { id: 1, name: '김철수', position: '부장', role: 'manager', department_id: 1, joined_at: '2000-03-01', departments: { name: '생산부' } },
+  { id: 2, name: '이영희', position: '과장', role: 'staff', department_id: 2, joined_at: '2015-08-01', departments: { name: '품질부' } },
+  { id: 3, name: '박민준', position: '대리', role: 'staff', department_id: 1, joined_at: '2023-04-10', departments: { name: '생산부' } },
+  { id: 4, name: '최지현', position: '사원', role: 'staff', department_id: 3, joined_at: '2026-03-02', departments: { name: '영업부' } },
+  { id: 5, name: '정수호', position: '차장', role: 'admin', department_id: 4, joined_at: '2010-07-15', departments: { name: '관리부' } },
 ]
 
 // today = '2026-04-05'

@@ -64,7 +64,7 @@ export default async function ReportPage({
       ...l,
       log_date: l.log_date,
     }))
-    users = SAMPLE_USERS
+    users = SAMPLE_USERS.filter(u => u.role !== 'admin')
   } else {
     const supabase = await createClient()
     const [{ data: logsData }, { data: usersData }] = await Promise.all([

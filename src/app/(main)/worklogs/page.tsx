@@ -44,7 +44,7 @@ export default async function WorklogsPage({
       }))
       attendance = SAMPLE_ATTENDANCE
     }
-    users = SAMPLE_USERS
+    users = SAMPLE_USERS.filter(u => u.role !== 'admin')
     departments = SAMPLE_DEPARTMENTS
   } else {
     // 특근 여부 먼저 확인 (쉬는 날이어도 fetch)
