@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import {
   Plus, CheckCircle2, Circle, ChevronLeft, ChevronRight,
   Trash2, MessageSquare, X, Loader2, AlertCircle, Briefcase, Zap, Clock,
-  Car, UserX, Pencil, Check, Moon, Hammer, FileBarChart2, Bell,
+  Car, UserX, Pencil, Check, Moon, Hammer, FileBarChart2, Bell, Copy,
 } from 'lucide-react'
 
 // ── 타입 ────────────────────────────────────────────────
@@ -203,6 +203,81 @@ export default function WorklogClient({
   const total = filtered.length
   const done  = filtered.filter(l => l.achieved).length
   const pct   = total > 0 ? Math.round(done / total * 100) : 0
+
+  // ── 업무 편집 ────────────────────────────────────────────
+  const [editingLogId, setEditingLogId] = useState<number | null>(null)
+  const [editForm, setEditForm] = useState({ title: '', log_type: '정기업무' as LogType, description: '' })
+  const [savingEdit, setSavingEdit] = useState(false)
+
+  function startEdit(log: WorkLog) {
+    setEditingLogId(log.id)
+    setEditForm({ title: log.title, log_type: log.log_type, description: log.description || '' })
+  }
+
+  async function saveEdit(id: number) {
+    if (!editForm.title.trim()) return
+    if (isSample) { alert('샘플 모드입니다.'); return }
+    setSavingEdit(true)
+    const supabase = createClient()
+    const { error } = await supabase.from('work_logs')
+      .update({ title: editForm.title, log_type: editForm.log_type, description: editForm.description })
+      .eq('id', id)
+    setSavingEdit(false)
+    if (error) { alert('수정 실패: ' + error.message); return }
+    setLogs(prev => prev.map(l => l.id === id ? { ...l, ...editForm } : l))
+    setEditingLogId(null)
+  }
+
+  // ── 이전일 복사 ────────────────────────────────────────
+  const [showCopyModal, setShowCopyModal] = useState(false)
+  const [prevLogs, setPrevLogs] = useState<WorkLog[]>([])
+  const [selectedCopyIds, setSelectedCopyIds] = useState<Set<number>>(new Set())
+  const [loadingCopy, setLoadingCopy] = useState(false)
+  const [copyingSave, setCopyingSave] = useState(false)
+
+  async function openCopyModal() {
+    setLoadingCopy(true)
+    setShowCopyModal(true)
+    const prevDate = addDays(targetDate, -1)
+    if (isSample) {
+      // 샘플 모드: SAMPLE_WORK_LOGS에서 전일 데이터 없으므로 빈 목록
+      setPrevLogs([])
+      setLoadingCopy(false)
+      return
+    }
+    const supabase = createClient()
+    const { data } = await supabase.from('work_logs')
+      .select('*, users(name, position)')
+      .eq('log_date', prevDate)
+      .eq('user_id', currentUserId)
+    setPrevLogs(data ?? [])
+    setSelectedCopyIds(new Set((data ?? []).map((l: any) => l.id)))
+    setLoadingCopy(false)
+  }
+
+  async function executeCopy() {
+    if (selectedCopyIds.size === 0) return
+    setCopyingSave(true)
+    const toCopy = prevLogs.filter(l => selectedCopyIds.has(l.id))
+    if (isSample) { alert('샘플 모드입니다.'); setCopyingSave(false); return }
+    const supabase = createClient()
+    const inserts = toCopy.map(l => ({
+      user_id: currentUserId,
+      log_date: targetDate,
+      log_type: l.log_type,
+      title: l.title,
+      description: l.description,
+      is_planned: true,
+      achieved: false,
+    }))
+    const { data, error } = await supabase.from('work_logs')
+      .insert(inserts)
+      .select('*, users(name, position)')
+    setCopyingSave(false)
+    if (error) { alert('복사 실패: ' + error.message); return }
+    if (data) setLogs(prev => [...prev, ...data])
+    setShowCopyModal(false)
+  }
 
   // ── 업무 등록 폼 ────────────────────────────────────────
   const [showForm, setShowForm] = useState(false)
@@ -632,7 +707,12 @@ export default function WorklogClient({
           ))}
         </select>
         {!isPast && (
-          <div className="ml-auto">
+          <div className="ml-auto flex gap-2">
+            <button onClick={openCopyModal}
+              className="flex items-center gap-1.5 border border-gray-200 text-gray-600 text-sm font-semibold px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
+              <Copy size={14} />
+              어제 복사
+            </button>
             <button onClick={() => setShowForm(v => !v)}
               className="flex items-center gap-2 bg-[#1A2744] text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-[#243560] transition-colors">
               <Plus size={15} />
@@ -772,25 +852,59 @@ export default function WorklogClient({
                       )}
                     </div>
 
-                    {/* 우측 액션 (과거 날짜 숨김) */}
-                    {!isPast && (
-                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-                        {!log.achieved && noteEditId !== log.id && (
-                          <button onClick={() => { setNoteEditId(log.id); setNoteDraft(log.note || '') }}
-                            title="사유 입력"
-                            className="p-1.5 rounded-lg text-gray-300 hover:text-yellow-500 hover:bg-yellow-50 transition-colors">
-                            <MessageSquare size={14} />
-                          </button>
-                        )}
-                        {canManage && (
-                          <button onClick={() => deleteLog(log.id)} disabled={deletingId === log.id}
-                            className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50">
-                            {deletingId === log.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
-                          </button>
-                        )}
-                      </div>
-                    )}
+                    {/* 우측 액션 */}
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                      {/* 편집 버튼 (당일: 모든 역할, 과거: 관리자만) */}
+                      {(!isPast || canManage) && editingLogId !== log.id && (
+                        <button onClick={() => startEdit(log)} title="편집"
+                          className="p-1.5 rounded-lg text-gray-300 hover:text-blue-500 hover:bg-blue-50 transition-colors">
+                          <Pencil size={14} />
+                        </button>
+                      )}
+                      {!isPast && !log.achieved && noteEditId !== log.id && (
+                        <button onClick={() => { setNoteEditId(log.id); setNoteDraft(log.note || '') }}
+                          title="사유 입력"
+                          className="p-1.5 rounded-lg text-gray-300 hover:text-yellow-500 hover:bg-yellow-50 transition-colors">
+                          <MessageSquare size={14} />
+                        </button>
+                      )}
+                      {canManage && (
+                        <button onClick={() => deleteLog(log.id)} disabled={deletingId === log.id}
+                          className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50">
+                          {deletingId === log.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                        </button>
+                      )}
+                    </div>
                   </div>
+
+                  {/* 인라인 편집 UI */}
+                  {editingLogId === log.id && (
+                    <div className="mx-5 mb-3 bg-blue-50 border border-blue-200 rounded-lg p-3 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-blue-700">편집 모드</span>
+                        <button onClick={() => setEditingLogId(null)} className="text-gray-400 hover:text-gray-600"><X size={14} /></button>
+                      </div>
+                      <div className="flex gap-1.5">
+                        {(['정기업무', '프로젝트', '돌발업무'] as LogType[]).map(t => (
+                          <button key={t} onClick={() => setEditForm(f => ({ ...f, log_type: t }))}
+                            className={`text-[10px] font-semibold px-2 py-1 rounded-full border ${
+                              editForm.log_type === t ? LOG_TYPE_META[t].color + ' border-current' : 'bg-white text-gray-400 border-gray-200'
+                            }`}>{t}</button>
+                        ))}
+                      </div>
+                      <input value={editForm.title} onChange={e => setEditForm(f => ({ ...f, title: e.target.value }))}
+                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400 bg-white"
+                        placeholder="제목" />
+                      <textarea value={editForm.description} onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))}
+                        rows={2} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400 bg-white resize-none"
+                        placeholder="설명 (선택)" />
+                      <button onClick={() => saveEdit(log.id)} disabled={savingEdit}
+                        className="w-full bg-blue-600 text-white text-sm font-semibold py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-1.5">
+                        {savingEdit ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
+                        저장
+                      </button>
+                    </div>
+                  )}
 
                   {/* 미달성 경고 */}
                   {!log.achieved && log.log_type !== '돌발업무' && !isToday && (
@@ -805,6 +919,57 @@ export default function WorklogClient({
           </div>
         )}
       </div>
+
+      {/* ── 이전일 복사 모달 ───────────────────────────── */}
+      {showCopyModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setShowCopyModal(false)} />
+          <div className="relative bg-white rounded-2xl shadow-xl p-6 w-full max-w-md">
+            <button onClick={() => setShowCopyModal(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><X size={18} /></button>
+            <h3 className="font-bold text-gray-900 mb-1">어제 업무 복사</h3>
+            <p className="text-xs text-gray-500 mb-4">{addDays(targetDate, -1)} 업무 → 오늘 ({targetDate})</p>
+
+            {loadingCopy ? (
+              <div className="text-center py-8"><Loader2 size={24} className="animate-spin mx-auto text-gray-400" /></div>
+            ) : prevLogs.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-sm text-gray-400">어제 등록된 업무가 없습니다</p>
+              </div>
+            ) : (
+              <div className="space-y-2 mb-4 max-h-64 overflow-y-auto">
+                {prevLogs.map(log => (
+                  <label key={log.id} className={`flex items-start gap-2.5 p-2.5 rounded-lg border cursor-pointer transition-colors ${
+                    selectedCopyIds.has(log.id) ? 'border-blue-300 bg-blue-50' : 'border-gray-200 hover:bg-gray-50'
+                  }`}>
+                    <input type="checkbox" checked={selectedCopyIds.has(log.id)}
+                      onChange={e => {
+                        const next = new Set(selectedCopyIds)
+                        e.target.checked ? next.add(log.id) : next.delete(log.id)
+                        setSelectedCopyIds(next)
+                      }}
+                      className="mt-0.5 rounded border-gray-300" />
+                    <div>
+                      <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded ${LOG_TYPE_META[log.log_type].color}`}>
+                        {LOG_TYPE_META[log.log_type].icon}{log.log_type}
+                      </span>
+                      <p className="text-sm font-medium text-gray-800 mt-0.5">{log.title}</p>
+                      {log.description && <p className="text-xs text-gray-500 mt-0.5">{log.description}</p>}
+                    </div>
+                  </label>
+                ))}
+              </div>
+            )}
+
+            {prevLogs.length > 0 && (
+              <button onClick={executeCopy} disabled={copyingSave || selectedCopyIds.size === 0}
+                className="w-full bg-[#1A2744] text-white font-semibold py-2.5 rounded-lg text-sm hover:bg-[#243560] disabled:opacity-50 flex items-center justify-center gap-2">
+                {copyingSave ? <Loader2 size={14} className="animate-spin" /> : <Copy size={14} />}
+                선택 {selectedCopyIds.size}건 복사
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
     </div>
   )

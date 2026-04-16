@@ -215,13 +215,28 @@ INSERT INTO departments (name, code) VALUES
 -- ── Module 7: 근태 관리 ──────────────────────────────────
 
 CREATE TABLE attendance_records (
+  id                SERIAL PRIMARY KEY,
+  user_id           INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  date              DATE NOT NULL,
+  type              VARCHAR(20) NOT NULL,  -- '연차','반차오전','반차오후','외근','출장','재택','병가','기타'
+  note              TEXT,
+  status            VARCHAR(20) DEFAULT '승인',  -- '대기' | '승인' | '반려'
+  approver_id       INT REFERENCES users(id),
+  approved_at       TIMESTAMPTZ,
+  rejection_reason  TEXT,
+  created_at        TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(user_id, date)
+);
+
+-- 연차 할당량
+CREATE TABLE leave_quotas (
   id          SERIAL PRIMARY KEY,
   user_id     INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  date        DATE NOT NULL,
-  type        VARCHAR(20) NOT NULL,  -- '연차','반차오전','반차오후','외근','출장','재택','병가','기타'
+  year        INT NOT NULL,
+  total_days  NUMERIC(4,1) DEFAULT 15,
+  used_days   NUMERIC(4,1) DEFAULT 0,
   note        TEXT,
-  created_at  TIMESTAMPTZ DEFAULT now(),
-  UNIQUE(user_id, date)
+  UNIQUE(user_id, year)
 );
 
 CREATE TABLE special_workdays (

@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser } from '@/lib/auth/getUser'
-import { SAMPLE_WORK_LOGS, SAMPLE_USERS } from '@/lib/sample-data'
+import { SAMPLE_WORK_LOGS, SAMPLE_USERS, SAMPLE_DEPARTMENTS } from '@/lib/sample-data'
 import ReportHeader from './ReportHeader'
 
 // ── 날짜 범위 계산 ────────────────────────────────────────
@@ -21,7 +21,6 @@ function getDateRange(type: string, date: string) {
     const end   = `${y}-${String(m).padStart(2,'0')}-${String(lastDay).padStart(2,'0')}`
     return { start, end, title: '월간 업무일지 보고서' }
   }
-  // daily (default)
   return { start: date, end: date, title: '업무일지 일일 보고서' }
 }
 
@@ -43,12 +42,14 @@ function fmtPeriod(type: string, start: string, end: string) {
 export default async function ReportPage({
   searchParams,
 }: {
-  searchParams: Promise<{ type?: string; date?: string }>
+  searchParams: Promise<{ type?: string; date?: string; dept?: string }>
 }) {
   const params     = await searchParams
   const type       = params.type ?? 'daily'
   const today      = new Date().toISOString().split('T')[0]
   const baseDate   = params.date ?? today
+  const deptId     = params.dept
+  const deptIdNum  = deptId ? Number(deptId) : null
   const { start, end, title } = getDateRange(type, baseDate)
 
   const currentUser = await getCurrentUser()
@@ -57,32 +58,48 @@ export default async function ReportPage({
   // ── 데이터 ───────────────────────────────────────────────
   let logs: any[]
   let users: any[]
+  let departments: { id: number; name: string }[]
 
   if (isSample) {
-    // 샘플: 날짜 필터 무관하게 전체 샘플 데이터 사용
-    logs = SAMPLE_WORK_LOGS.map(l => ({
-      ...l,
-      log_date: l.log_date,
-    }))
+    logs = SAMPLE_WORK_LOGS.map(l => ({ ...l, log_date: l.log_date }))
     users = SAMPLE_USERS.filter(u => u.role !== 'admin')
+    departments = SAMPLE_DEPARTMENTS
+    // 샘플 모드에서 부서 필터 적용
+    if (deptIdNum) {
+      users = users.filter(u => u.department_id === deptIdNum)
+      const userIdSet = new Set(users.map(u => u.id))
+      logs = logs.filter(l => userIdSet.has(l.user_id))
+    }
   } else {
     const supabase = await createClient()
-    const [{ data: logsData }, { data: usersData }] = await Promise.all([
+    const [{ data: logsData }, { data: usersData }, { data: deptData }] = await Promise.all([
       supabase.from('work_logs')
-        .select('*, users(id, name, position)')
+        .select('*, users(id, name, position, department_id, departments(id, name))')
         .gte('log_date', start)
         .lte('log_date', end)
         .order('log_date', { ascending: true })
         .order('created_at', { ascending: true }),
       supabase.from('users')
-        .select('id, name, position')
+        .select('id, name, position, department_id, departments(id, name)')
         .eq('is_active', true)
         .neq('role', 'admin')
         .order('name'),
+      supabase.from('departments').select('id, name').order('name'),
     ])
     logs  = logsData  ?? []
     users = usersData ?? []
+    departments = deptData ?? []
+
+    // 부서 필터 적용
+    if (deptIdNum) {
+      users = users.filter(u => u.department_id === deptIdNum)
+      logs = logs.filter(l => l.users?.department_id === deptIdNum)
+    }
   }
+
+  const selectedDeptName = deptIdNum
+    ? departments.find(d => d.id === deptIdNum)?.name
+    : null
 
   // ── 통계 계산 ─────────────────────────────────────────────
   const total     = logs.length
@@ -90,7 +107,7 @@ export default async function ReportPage({
   const pct       = total > 0 ? Math.round(achieved / total * 100) : 0
   const unachieved = total - achieved
 
-  // 날짜별 그룹 (주간/월간용)
+  // 날짜별 그룹
   const byDate = logs.reduce<Record<string, any[]>>((acc, l) => {
     const d = l.log_date
     if (!acc[d]) acc[d] = []
@@ -107,14 +124,27 @@ export default async function ReportPage({
     return acc
   }, {})
 
-  // 부서별 통계
-  const deptStats = logs.reduce<Record<string, { name: string; total: number; done: number }>>((acc, l) => {
-    const dName = l.users?.position ?? '미분류'
-    if (!acc[dName]) acc[dName] = { name: dName, total: 0, done: 0 }
-    acc[dName].total++
-    if (l.achieved) acc[dName].done++
+  // 직책별 통계 (기존)
+  const positionStats = logs.reduce<Record<string, { name: string; total: number; done: number }>>((acc, l) => {
+    const pName = l.users?.position ?? '미분류'
+    if (!acc[pName]) acc[pName] = { name: pName, total: 0, done: 0 }
+    acc[pName].total++
+    if (l.achieved) acc[pName].done++
     return acc
   }, {})
+
+  // 부서별 통계 (신규)
+  const deptStatsMap: Record<number, { name: string; total: number; done: number; users: Set<number> }> = {}
+  logs.forEach(l => {
+    const did = l.users?.department_id ?? (isSample ? (users.find(u => u.id === l.user_id)?.department_id) : null)
+    const dName = l.users?.departments?.name ?? (isSample ? (SAMPLE_DEPARTMENTS.find(d => d.id === did)?.name) : '미분류')
+    if (!did) return
+    if (!deptStatsMap[did]) deptStatsMap[did] = { name: dName, total: 0, done: 0, users: new Set() }
+    deptStatsMap[did].total++
+    deptStatsMap[did].users.add(l.user_id)
+    if (l.achieved) deptStatsMap[did].done++
+  })
+  const deptStats = Object.values(deptStatsMap)
 
   // 미작성자 (당일 보고서만)
   const submittedUserIds = new Set(logs.map(l => l.users?.id ?? l.user_id))
@@ -132,9 +162,8 @@ export default async function ReportPage({
 
   return (
     <>
-      <ReportHeader type={type} baseDate={baseDate} today={today} />
+      <ReportHeader type={type} baseDate={baseDate} today={today} deptId={deptId} departments={departments} />
 
-      {/* ── 인쇄 본문 ── */}
       <div className="max-w-4xl mx-auto p-4 lg:p-8 print:p-0 print:max-w-none">
 
         {/* 회사 헤더 + 결재란 */}
@@ -144,6 +173,7 @@ export default async function ReportPage({
             <h1 className="text-2xl font-black text-gray-900">{title}</h1>
             <p className="text-sm text-gray-500 mt-1">
               {fmtPeriod(type, start, end)}
+              {selectedDeptName && <span className="ml-2 text-blue-600 font-semibold">[{selectedDeptName}]</span>}
               {isSample && <span className="ml-2 text-xs text-amber-600 font-bold">[샘플 데이터]</span>}
             </p>
           </div>
@@ -152,7 +182,6 @@ export default async function ReportPage({
               <p>생성일시</p>
               <p className="font-medium text-gray-600">{generatedAt}</p>
             </div>
-            {/* 결재란 (인쇄 시에만 표시) */}
             <table className="hidden print:table border-collapse border-2 border-gray-800 text-center text-xs" style={{ minWidth: 160 }}>
               <tbody>
                 <tr>
@@ -184,12 +213,42 @@ export default async function ReportPage({
           ))}
         </div>
 
-        {/* 부서별 달성률 */}
-        {Object.keys(deptStats).length > 0 && (
+        {/* 부서별 달성률 (신규) */}
+        {deptStats.length > 0 && !deptIdNum && (
+          <div className="mb-6">
+            <h2 className="text-sm font-bold text-gray-700 mb-3 pb-2 border-b border-gray-100">부서별 달성률</h2>
+            <div className="grid sm:grid-cols-2 gap-3">
+              {deptStats.map(({ name, total: dt, done, users: uSet }) => {
+                const p = dt > 0 ? Math.round(done / dt * 100) : 0
+                return (
+                  <div key={name} className="bg-white border border-gray-100 rounded-xl p-3">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-sm font-bold text-gray-800">{name}</span>
+                      <span className="text-xs text-gray-500">{uSet.size}명 참여</span>
+                    </div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="flex-1 bg-gray-100 rounded-full h-2">
+                        <div className={`h-2 rounded-full ${p >= 80 ? 'bg-green-500' : p >= 60 ? 'bg-yellow-400' : 'bg-red-400'}`}
+                          style={{ width: `${p}%` }} />
+                      </div>
+                      <span className={`text-sm font-black w-12 text-right ${p >= 80 ? 'text-green-600' : p >= 60 ? 'text-yellow-600' : 'text-red-600'}`}>
+                        {p}%
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-500">{done}/{dt}건 달성</p>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* 직책별 달성률 */}
+        {Object.keys(positionStats).length > 0 && (
           <div className="mb-6">
             <h2 className="text-sm font-bold text-gray-700 mb-3 pb-2 border-b border-gray-100">직책별 달성률</h2>
             <div className="grid grid-cols-2 gap-3">
-              {Object.values(deptStats).map(({ name, total: dt, done }) => {
+              {Object.values(positionStats).map(({ name, total: dt, done }) => {
                 const p = dt > 0 ? Math.round(done / dt * 100) : 0
                 return (
                   <div key={name} className="flex items-center gap-3">
@@ -210,17 +269,15 @@ export default async function ReportPage({
           </div>
         )}
 
-        {/* 업무 목록 — 주간/월간은 날짜별로 묶음 */}
+        {/* 업무 목록 */}
         <div className="mb-6">
           <h2 className="text-sm font-bold text-gray-700 mb-3 pb-2 border-b border-gray-100">업무 내역</h2>
 
           {total === 0 ? (
             <p className="text-center text-gray-400 text-sm py-8">기간 내 업무일지가 없습니다.</p>
           ) : type === 'daily' ? (
-            /* 당일: 직원별 묶음 */
             <PersonGroupList byUser={byUser} users={users} logTypeColor={LOG_TYPE_COLOR} />
           ) : (
-            /* 주간/월간: 날짜별 → 직원별 묶음 */
             dates.map(d => (
               <div key={d} className="mb-5 print:break-inside-avoid">
                 <div className="flex items-center gap-3 mb-3">
@@ -245,7 +302,7 @@ export default async function ReportPage({
           )}
         </div>
 
-        {/* 미작성자 (당일만) */}
+        {/* 미작성자 */}
         {type === 'daily' && nonSubmitters.length > 0 && (
           <div className="mb-6">
             <h2 className="text-sm font-bold text-gray-700 mb-3 pb-2 border-b border-gray-100">
@@ -264,7 +321,6 @@ export default async function ReportPage({
             </div>
           </div>
         )}
-
 
       </div>
     </>
@@ -289,7 +345,6 @@ function PersonGroupList({
 
         return (
           <div key={uid} className="border border-gray-100 rounded-xl overflow-hidden print:break-inside-avoid">
-            {/* 직원 헤더 */}
             <div className="bg-gray-50 px-4 py-2.5 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-bold text-gray-800">{user?.name}</span>
@@ -300,7 +355,6 @@ function PersonGroupList({
               </span>
             </div>
 
-            {/* 업무 목록 */}
             <div className="divide-y divide-gray-50">
               {uLogs.map((log: any, i: number) => (
                 <div key={i} className="px-4 py-2.5 flex items-start gap-3">
