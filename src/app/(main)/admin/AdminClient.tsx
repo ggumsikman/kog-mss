@@ -16,8 +16,10 @@ const ROLE_COLOR: Record<string, string> = {
 
 export default function AdminClient({
   users: initUsers,
+  departments = [],
 }: {
   users: any[]
+  departments: { id: number; name: string }[]
 }) {
   const router = useRouter()
   const [, startTransition] = useTransition()
@@ -29,6 +31,7 @@ export default function AdminClient({
   const [form, setForm] = useState({
     name: '', phone: '', email: '', password: '0000', position: '',
     role: 'employee' as typeof ROLES[number],
+    department_id: '',
     joined_at: new Date().toISOString().split('T')[0],
   })
 
@@ -61,7 +64,7 @@ export default function AdminClient({
     setUsers(prev => [...prev, json.user])
     setSaving(false)
     setShowForm(false)
-    setForm({ name: '', phone: '', email: '', password: '0000', position: '', role: 'employee', joined_at: new Date().toISOString().split('T')[0] })
+    setForm({ name: '', phone: '', email: '', password: '0000', position: '', role: 'employee', department_id: '', joined_at: new Date().toISOString().split('T')[0] })
     startTransition(() => router.refresh())
   }
 
@@ -226,6 +229,13 @@ export default function AdminClient({
               <div>
                 <label className="text-xs font-semibold text-gray-600 mb-1 block">초기 비밀번호 * (4자 이상)</label>
                 <input type="password" value={form.password} onChange={e => f('password', e.target.value)} className={inputCls} />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-gray-600 mb-1 block">소속 부서</label>
+                <select value={form.department_id} onChange={e => f('department_id', e.target.value)} className={inputCls}>
+                  <option value="">미배정</option>
+                  {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+                </select>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>

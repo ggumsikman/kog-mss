@@ -10,6 +10,7 @@ export interface CurrentUser {
   role: UserRole
   phone: string
   email: string
+  department_id: number | null
   is_sample: boolean
 }
 
@@ -20,6 +21,7 @@ const SAMPLE_USER: CurrentUser = {
   role: 'admin',
   phone: '',
   email: '',
+  department_id: 1,
   is_sample: true,
 }
 
@@ -42,7 +44,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
 
   const { data } = await supabase
     .from('users')
-    .select('id, name, position, role, phone, email')
+    .select('id, name, position, role, phone, email, department_id')
     .eq('id', parseInt(userId))
     .eq('is_active', true)
     .single()

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
+import bcrypt from 'bcryptjs'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -40,9 +41,10 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   const { id } = await params
   const body = await request.json()
 
+  const hashed = await bcrypt.hash(body.password, 10)
   const { error } = await supabase
     .from('users')
-    .update({ password_hash: body.password })
+    .update({ password_hash: hashed })
     .eq('id', id)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })

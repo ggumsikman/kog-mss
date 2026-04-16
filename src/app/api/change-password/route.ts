@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import bcrypt from 'bcryptjs'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -29,14 +30,25 @@ export async function POST(req: NextRequest) {
     .eq('id', parseInt(userId))
     .single()
 
-  if (!user || user.password_hash !== currentPassword) {
+  if (!user) {
     return NextResponse.json({ error: '현재 비밀번호가 올바르지 않습니다.' }, { status: 401 })
   }
 
-  // 비밀번호 변경
+  const stored = user.password_hash ?? ''
+  const isBcrypt = stored.startsWith('$2')
+  const passwordValid = isBcrypt
+    ? await bcrypt.compare(currentPassword, stored)
+    : stored === currentPassword
+
+  if (!passwordValid) {
+    return NextResponse.json({ error: '현재 비밀번호가 올바르지 않습니다.' }, { status: 401 })
+  }
+
+  // 새 비밀번호 해싱 후 저장
+  const hashed = await bcrypt.hash(newPassword, 10)
   const { error } = await supabase
     .from('users')
-    .update({ password_hash: newPassword })
+    .update({ password_hash: hashed })
     .eq('id', parseInt(userId))
 
   if (error) {

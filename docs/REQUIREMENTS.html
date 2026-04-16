@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOG MSS 요구사항 명세서</title>
+<style>
+  :root {
+    --navy: #1a2744;
+    --navy-light: #243352;
+    --blue: #3b82f6;
+    --blue-light: #dbeafe;
+    --green: #22c55e;
+    --green-light: #dcfce7;
+    --yellow: #eab308;
+    --yellow-light: #fef9c3;
+    --red: #ef4444;
+    --red-light: #fee2e2;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-500: #6b7280;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+    --shadow: 0 1px 3px rgba(0,0,0,.1), 0 1px 2px rgba(0,0,0,.06);
+    --shadow-md: 0 4px 6px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.06);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: var(--gray-800);
+    background: var(--gray-50);
+    line-height: 1.6;
+    font-size: 15px;
+  }
+
+  /* ── Sticky TOC sidebar ── */
+  .layout {
+    display: flex;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .sidebar {
+    width: 280px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    background: var(--navy);
+    color: #fff;
+    padding: 24px 0;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,.2) transparent;
+  }
+
+  .sidebar-logo {
+    padding: 0 24px 20px;
+    border-bottom: 1px solid rgba(255,255,255,.1);
+    margin-bottom: 16px;
+  }
+  .sidebar-logo h2 { font-size: 16px; font-weight: 700; letter-spacing: -.3px; }
+  .sidebar-logo p { font-size: 11px; color: rgba(255,255,255,.5); margin-top: 4px; }
+
+  .toc { list-style: none; }
+  .toc li a {
+    display: block;
+    padding: 7px 24px;
+    color: rgba(255,255,255,.7);
+    text-decoration: none;
+    font-size: 13px;
+    transition: .15s;
+    border-left: 3px solid transparent;
+  }
+  .toc li a:hover, .toc li a.active {
+    color: #fff;
+    background: rgba(255,255,255,.06);
+    border-left-color: var(--blue);
+  }
+  .toc li.section > a {
+    font-weight: 600;
+    font-size: 13px;
+    color: rgba(255,255,255,.45);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    padding-top: 16px;
+    pointer-events: none;
+  }
+
+  /* ── Main content ── */
+  .main {
+    flex: 1;
+    min-width: 0;
+    padding: 40px 48px 80px;
+  }
+
+  /* ── Hero header ── */
+  .hero {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+    color: #fff;
+    padding: 48px;
+    border-radius: 16px;
+    margin-bottom: 40px;
+    box-shadow: var(--shadow-md);
+  }
+  .hero h1 { font-size: 28px; font-weight: 800; letter-spacing: -.5px; }
+  .hero .subtitle { font-size: 15px; color: rgba(255,255,255,.6); margin-top: 8px; }
+  .hero-meta {
+    display: flex;
+    gap: 24px;
+    margin-top: 24px;
+    flex-wrap: wrap;
+  }
+  .hero-meta-item {
+    background: rgba(255,255,255,.08);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 8px;
+    padding: 12px 20px;
+  }
+  .hero-meta-item .label { font-size: 11px; color: rgba(255,255,255,.5); text-transform: uppercase; letter-spacing: .5px; }
+  .hero-meta-item .value { font-size: 16px; font-weight: 700; margin-top: 2px; }
+
+  /* ── Summary cards ── */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+  .summary-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: var(--shadow);
+    border-left: 4px solid var(--gray-200);
+  }
+  .summary-card.red   { border-left-color: var(--red); }
+  .summary-card.yellow { border-left-color: var(--yellow); }
+  .summary-card.green  { border-left-color: var(--green); }
+  .summary-card.blue   { border-left-color: var(--blue); }
+  .summary-card .num { font-size: 32px; font-weight: 800; color: var(--gray-900); }
+  .summary-card .desc { font-size: 13px; color: var(--gray-500); margin-top: 2px; }
+
+  /* ── Section ── */
+  .section-block {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--gray-100);
+    cursor: pointer;
+    user-select: none;
+  }
+  .section-header:hover { background: var(--gray-50); }
+  .section-header .icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .section-header h2 { font-size: 17px; font-weight: 700; }
+  .section-header .badge {
+    margin-left: auto;
+    font-size: 12px;
+    padding: 2px 10px;
+    border-radius: 99px;
+    font-weight: 600;
+  }
+  .section-body { padding: 24px; }
+
+  /* Icon backgrounds */
+  .icon-navy   { background: var(--navy); color: #fff; }
+  .icon-blue   { background: var(--blue-light); color: var(--blue); }
+  .icon-green  { background: var(--green-light); color: var(--green); }
+  .icon-yellow { background: var(--yellow-light); color: var(--yellow); }
+  .icon-red    { background: var(--red-light); color: var(--red); }
+
+  /* ── Tables ── */
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 13.5px;
+    margin: 16px 0;
+  }
+  thead th {
+    background: var(--gray-50);
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+    color: var(--gray-500);
+    border-bottom: 2px solid var(--gray-200);
+  }
+  tbody td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--gray-100);
+    vertical-align: top;
+  }
+  tbody tr:hover { background: var(--gray-50); }
+
+  /* ── Badges ── */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    padding: 2px 10px;
+    border-radius: 99px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .badge-green  { background: var(--green-light); color: #15803d; }
+  .badge-red    { background: var(--red-light); color: #dc2626; }
+  .badge-yellow { background: var(--yellow-light); color: #a16207; }
+  .badge-blue   { background: var(--blue-light); color: #2563eb; }
+  .badge-gray   { background: var(--gray-100); color: var(--gray-600); }
+
+  /* ── FR / GAP / BUG IDs ── */
+  .id-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    padding: 1px 7px;
+    border-radius: 4px;
+    margin-right: 6px;
+  }
+  .id-fr   { background: var(--blue-light); color: #1d4ed8; }
+  .id-gap  { background: var(--yellow-light); color: #92400e; }
+  .id-bug  { background: var(--red-light); color: #dc2626; }
+  .id-sec  { background: #fae8ff; color: #9333ea; }
+  .id-cr   { background: var(--gray-100); color: var(--gray-600); }
+
+  /* ── Requirement lists ── */
+  .req-list { list-style: none; margin: 12px 0; }
+  .req-list li {
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-bottom: 4px;
+    font-size: 13.5px;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .req-list li:hover { background: var(--gray-50); }
+
+  /* ── Checklist ── */
+  .checklist { list-style: none; columns: 2; column-gap: 32px; margin: 12px 0; }
+  .checklist li {
+    padding: 6px 0;
+    font-size: 13.5px;
+    break-inside: avoid;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .checklist li::before {
+    content: '';
+    width: 16px; height: 16px;
+    border: 2px solid var(--gray-300);
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+
+  /* ── Phase timeline ── */
+  .phase-timeline { margin: 16px 0; }
+  .phase-group { margin-bottom: 24px; }
+  .phase-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 15px;
+    margin-bottom: 8px;
+  }
+  .phase-dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .phase-items { list-style: none; padding-left: 20px; border-left: 2px solid var(--gray-200); }
+  .phase-items li {
+    padding: 6px 0 6px 16px;
+    position: relative;
+    font-size: 14px;
+  }
+  .phase-items li::before {
+    content: '';
+    position: absolute;
+    left: -7px; top: 13px;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid var(--gray-300);
+  }
+
+  /* ── Subsection headings ── */
+  .sub-heading {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--gray-700);
+    margin: 20px 0 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .sub-heading::before {
+    content: '';
+    width: 4px; height: 16px;
+    background: var(--blue);
+    border-radius: 2px;
+  }
+
+  /* ── Module status row ── */
+  .module-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+    margin: 16px 0;
+  }
+  .module-card {
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .module-card .emoji { font-size: 22px; }
+  .module-card .info { flex: 1; }
+  .module-card .info .name { font-weight: 600; font-size: 14px; }
+  .module-card .info .path { font-size: 11px; color: var(--gray-500); font-family: monospace; }
+
+  /* ── Gap priority section ── */
+  .gap-section { margin: 16px 0; }
+  .gap-section h4 {
+    font-size: 14px;
+    font-weight: 700;
+    padding: 8px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 1024px) {
+    .sidebar { display: none; }
+    .main { padding: 24px 20px 60px; }
+    .summary-grid { grid-template-columns: repeat(2, 1fr); }
+    .checklist { columns: 1; }
+  }
+
+  @media print {
+    .sidebar { display: none; }
+    .main { padding: 20px; }
+    .section-block { break-inside: avoid; box-shadow: none; border: 1px solid var(--gray-200); }
+    .hero { background: var(--navy) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- ─── Sidebar TOC ─── -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <h2>KOG MSS</h2>
+    <p>Requirements Spec v1.0</p>
+  </div>
+  <ul class="toc">
+    <li class="section"><a>Overview</a></li>
+    <li><a href="#overview">1. 시스템 개요</a></li>
+    <li><a href="#tech-stack">기술 스택 / 역할</a></li>
+    <li class="section"><a>Modules</a></li>
+    <li><a href="#mod-auth">2.1 인증 및 로그인</a></li>
+    <li><a href="#mod-dashboard">2.2 대시보드</a></li>
+    <li><a href="#mod-emp">2.3 직원 관리</a></li>
+    <li><a href="#mod-att">2.4 근태 관리</a></li>
+    <li><a href="#mod-org">2.5 조직도</a></li>
+    <li><a href="#mod-welfare">2.6 복리후생</a></li>
+    <li><a href="#mod-project">2.7 프로젝트</a></li>
+    <li><a href="#mod-worklog">2.8 업무일지</a></li>
+    <li><a href="#mod-report">2.9 업무 리포트</a></li>
+    <li><a href="#mod-doc">2.10 공문서</a></li>
+    <li><a href="#mod-edu">2.11 교육 관리</a></li>
+    <li><a href="#mod-inspect">2.12 법정점검</a></li>
+    <li><a href="#mod-schedule">2.13 연간 일정</a></li>
+    <li><a href="#mod-notif">2.14 알림 센터</a></li>
+    <li><a href="#mod-admin-user">2.15 사용자 관리</a></li>
+    <li><a href="#mod-admin-dept">2.16 부서 관리</a></li>
+    <li><a href="#mod-cron">2.17 Cron/자동화</a></li>
+    <li class="section"><a>Analysis</a></li>
+    <li><a href="#common">3. 공통 요구사항</a></li>
+    <li><a href="#security">4. 보안 요구사항</a></li>
+    <li><a href="#gap">5. 갭 분석</a></li>
+    <li><a href="#phases">6. 우선순위 작업</a></li>
+    <li><a href="#tests">7. 테스트 체크리스트</a></li>
+  </ul>
+</nav>
+
+<!-- ─── Main Content ─── -->
+<main class="main">
+
+<!-- HERO -->
+<div class="hero" id="overview">
+  <h1>KOG 인터내셔널 경영관리 시스템</h1>
+  <div class="subtitle">MSS (Management Support System) 요구사항 명세서</div>
+  <div class="hero-meta">
+    <div class="hero-meta-item"><div class="label">작성일</div><div class="value">2026-04-16</div></div>
+    <div class="hero-meta-item"><div class="label">목표 시행</div><div class="value">2026년 5월</div></div>
+    <div class="hero-meta-item"><div class="label">버전</div><div class="value">1.0</div></div>
+    <div class="hero-meta-item"><div class="label">모듈</div><div class="value">17개</div></div>
+    <div class="hero-meta-item"><div class="label">DB 테이블</div><div class="value">18개</div></div>
+  </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="summary-grid">
+  <div class="summary-card red"><div class="num">5</div><div class="desc">Critical 갭 (시행 전 필수)</div></div>
+  <div class="summary-card yellow"><div class="num">8</div><div class="desc">High 갭 (시행 초기 해결)</div></div>
+  <div class="summary-card blue"><div class="num">12</div><div class="desc">Medium 갭 (5월 이후)</div></div>
+  <div class="summary-card green"><div class="num">~120</div><div class="desc">테스트 항목</div></div>
+</div>
+
+<!-- ═══════════════════════════════ 1. SYSTEM OVERVIEW ═══════════════════════════════ -->
+<div class="section-block" id="tech-stack">
+  <div class="section-header">
+    <div class="icon icon-navy">&#9881;</div>
+    <h2>1. 시스템 개요</h2>
+  </div>
+  <div class="section-body">
+    <p style="margin-bottom:16px;">코그 인터내셔널의 일상 경영관리 업무를 디지털화하여 업무 효율성을 높이고, 법정의무사항 누락을 방지하며, 경영 현황을 실시간으로 파악할 수 있는 통합 관리 시스템.</p>
+
+    <div class="sub-heading">기술 스택</div>
+    <table>
+      <thead><tr><th>항목</th><th>기술</th></tr></thead>
+      <tbody>
+        <tr><td>프레임워크</td><td>Next.js 16 (App Router)</td></tr>
+        <tr><td>프론트엔드</td><td>React 19, TypeScript 5</td></tr>
+        <tr><td>스타일링</td><td>Tailwind CSS 4</td></tr>
+        <tr><td>데이터베이스</td><td>Supabase (PostgreSQL)</td></tr>
+        <tr><td>배포</td><td>Vercel</td></tr>
+        <tr><td>아이콘</td><td>Lucide React</td></tr>
+      </tbody>
+    </table>
+
+    <div class="sub-heading">사용자 역할</div>
+    <table>
+      <thead><tr><th>역할</th><th>설명</th><th>권한</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge badge-red">admin</span></td><td>시스템 관리자</td><td>모든 기능 접근, 사용자/부서 관리</td></tr>
+        <tr><td><span class="badge badge-yellow">manager</span></td><td>관리자급</td><td>데이터 CRUD, 직원 근태 관리</td></tr>
+        <tr><td><span class="badge badge-gray">staff</span></td><td>일반 직원</td><td>본인 업무일지 작성, 조회</td></tr>
+      </tbody>
+    </table>
+
+    <div class="sub-heading">구현된 모듈 (17개)</div>
+    <div class="module-grid">
+      <div class="module-card"><div class="emoji">&#128200;</div><div class="info"><div class="name">대시보드</div><div class="path">/dashboard</div></div><span class="badge badge-green">구현</span></div>
+      <div class="module-card"><div class="emoji">&#128101;</div><div class="info"><div class="name">직원 관리</div><div class="path">/hr/employees</div></div><span class="badge badge-green">구현</span></div>
+      <div class="module-card"><div class="emoji">&#128197;</div><div class="info"><div class="name">근태 관리</div><div class="path">/hr/attendance</div></div><span class="badge badge-green">구현</span></div>
+      <div class="module-card"><div class="emoji">&#127969;</div><div class="info"><div class="name">조직도</div><div class="path">/hr/org-chart</div></div><span class="badge badge-green">구현</span></div>
+      <div class="module-card"><div class="emoji">&#127873;</div><div class="info"><div class="name">복리후생</div><div class="path">/hr/welfare</div></div><span class="badge badge-green">구현</span></div>
+      <div class="module-card"><div class="emoji">&#128196;</div><div class="info"><div class="name">프로젝트</div><div class="path">/projects</div></div><span class="badge badge-green">구현</span></div>
+      <div class="module-card"><div class="emoji">&#128221;</div><div class="info"><div class="name">업무일지</div><div class="path">/worklogs</div></div><span class="badge badge-green">구현</span></div>
+      <div class="module-card"><div class="emoji">&#128202;</div><div class="info"><div class="name">업무 리포트</div><div class="path">/worklogs/report</div></div><span class="badge badge-green">구현</span></div>
+      <div class="module-card"><div class="emoji">&#128195;</div><div class="info"><div class="name">공문서</div><div class="path">/documents</div></div><span class="badge badge-green">구현</span></div>
+      <div class="module-card"><div class="emoji">&#127891;</div><div class="info"><div class="name">교육 관리</div><div class="path">/education</div></div><span class="badge badge-green">구현</span></div>
+      <div class="module-card"><div class="emoji">&#128737;</div><div class="info"><div class="name">법정점검</div><div class="path">/inspections</div></div><span class="badge badge-green">구현</span></div>
+      <div class="module-card"><div class="emoji">&#128467;</div><div class="info"><div class="name">연간 일정</div><div class="path">/schedule</div></div><span class="badge badge-green">구현</span></div>
+      <div class="module-card"><div class="emoji">&#128276;</div><div class="info"><div class="name">알림 센터</div><div class="path">/notifications</div></div><span class="badge badge-green">구현</span></div>
+      <div class="module-card"><div class="emoji">&#128274;</div><div class="info"><div class="name">인증/로그인</div><div class="path">/login</div></div><span class="badge badge-green">구현</span></div>
+      <div class="module-card"><div class="emoji">&#128736;</div><div class="info"><div class="name">사용자 관리</div><div class="path">/admin</div></div><span class="badge badge-green">구현</span></div>
+      <div class="module-card"><div class="emoji">&#127970;</div><div class="info"><div class="name">부서 관리</div><div class="path">/admin/departments</div></div><span class="badge badge-green">구현</span></div>
+      <div class="module-card"><div class="emoji">&#9200;</div><div class="info"><div class="name">Cron 자동화</div><div class="path">/api/cron/*</div></div><span class="badge badge-green">구현</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ 2. MODULE DETAILS ═══════════════════════════════ -->
+
+<!-- 2.1 Auth -->
+<div class="section-block" id="mod-auth">
+  <div class="section-header">
+    <div class="icon icon-red">&#128274;</div>
+    <h2>2.1 인증 및 로그인</h2>
+    <span class="badge badge-red">Critical 이슈 1건</span>
+  </div>
+  <div class="section-body">
+    <div class="sub-heading">현재 구현 상태</div>
+    <table>
+      <thead><tr><th>기능</th><th>상태</th><th>비고</th></tr></thead>
+      <tbody>
+        <tr><td>이름 + 비밀번호 로그인</td><td><span class="badge badge-green">구현</span></td><td>POST /api/login</td></tr>
+        <tr><td>샘플 모드 (데모)</td><td><span class="badge badge-green">구현</span></td><td>POST /api/sample-login, 24시간 유효</td></tr>
+        <tr><td>비밀번호 변경</td><td><span class="badge badge-green">구현</span></td><td>POST /api/change-password, 최소 4자</td></tr>
+        <tr><td>쿠키 기반 세션</td><td><span class="badge badge-green">구현</span></td><td>kog_user_id, 7일 유효, httpOnly</td></tr>
+        <tr><td>로그아웃</td><td><span class="badge badge-green">구현</span></td><td>클라이언트에서 쿠키 삭제</td></tr>
+      </tbody>
+    </table>
+
+    <div class="sub-heading">기능 요구사항</div>
+    <ul class="req-list">
+      <li><span class="id-tag id-fr">FR-AUTH-01</span> 사용자는 이름과 비밀번호로 로그인할 수 있어야 한다</li>
+      <li><span class="id-tag id-fr">FR-AUTH-02</span> 로그인 실패 시 명확한 오류 메시지 (미등록/비밀번호 오류 구분)</li>
+      <li><span class="id-tag id-fr">FR-AUTH-03</span> 비활성화된 계정은 로그인 불가</li>
+      <li><span class="id-tag id-fr">FR-AUTH-04</span> 샘플 모드로 전체 기능 체험 가능 (읽기 전용)</li>
+      <li><span class="id-tag id-fr">FR-AUTH-05</span> 비밀번호 변경 시 현재 비밀번호 확인 필수</li>
+    </ul>
+
+    <div class="sub-heading">알려진 문제</div>
+    <table>
+      <thead><tr><th>ID</th><th>문제</th><th>심각도</th><th>설명</th></tr></thead>
+      <tbody>
+        <tr><td><span class="id-tag id-bug">BUG-AUTH-01</span></td><td>평문 비밀번호 저장</td><td><span class="badge badge-red">Critical</span></td><td>password_hash 필드에 평문 저장, bcrypt 등 해싱 필요</td></tr>
+        <tr><td><span class="id-tag id-bug">BUG-AUTH-02</span></td><td>로그인 시도 제한 없음</td><td><span class="badge badge-yellow">Medium</span></td><td>브루트포스 공격에 취약</td></tr>
+        <tr><td><span class="id-tag id-bug">BUG-AUTH-03</span></td><td>CSRF 보호 없음</td><td><span class="badge badge-yellow">Medium</span></td><td>토큰 기반 CSRF 방어 필요</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 2.2 Dashboard -->
+<div class="section-block" id="mod-dashboard">
+  <div class="section-header">
+    <div class="icon icon-blue">&#128200;</div>
+    <h2>2.2 대시보드</h2>
+    <span class="badge badge-blue">갭 3건</span>
+  </div>
+  <div class="section-body">
+    <div class="sub-heading">현재 구현 상태</div>
+    <table>
+      <thead><tr><th>기능</th><th>상태</th><th>비고</th></tr></thead>
+      <tbody>
+        <tr><td>KPI 카드 4종</td><td><span class="badge badge-green">구현</span></td><td>지연 프로젝트, 긴급 점검, 이달 교육, 미처리 공문</td></tr>
+        <tr><td>지연 프로젝트 목록</td><td><span class="badge badge-green">구현</span></td><td>진행률 바, 지연일수 표시</td></tr>
+        <tr><td>이달 주요 일정</td><td><span class="badge badge-green">구현</span></td><td>점검 D-Day + 미처리 문서 통합</td></tr>
+        <tr><td>부서별 업무 달성률</td><td><span class="badge badge-green">구현</span></td><td>당월 기준, 색상 코딩</td></tr>
+        <tr><td>최근 알림</td><td><span class="badge badge-green">구현</span></td><td>미읽음 10건, 우선순위 뱃지</td></tr>
+      </tbody>
+    </table>
+    <div class="sub-heading">갭</div>
+    <table>
+      <thead><tr><th>ID</th><th>항목</th><th>설명</th></tr></thead>
+      <tbody>
+        <tr><td><span class="id-tag id-gap">GAP-DASH-01</span></td><td>부서/역할별 필터 없음</td><td>전체 데이터 표시, 본인 부서 우선 표시 필요</td></tr>
+        <tr><td><span class="id-tag id-gap">GAP-DASH-02</span></td><td>에러 핸들링 부재</td><td>Supabase 쿼리 실패 시 폴백 UI 없음</td></tr>
+        <tr><td><span class="id-tag id-gap">GAP-DASH-03</span></td><td>데이터 새로고침</td><td>수동 새로고침 필요, 자동 갱신 없음</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 2.3 ~ 2.6 HR Modules -->
+<div class="section-block" id="mod-emp">
+  <div class="section-header">
+    <div class="icon icon-blue">&#128101;</div>
+    <h2>2.3 인사관리 - 직원 관리</h2>
+    <span class="badge badge-yellow">갭 4건</span>
+  </div>
+  <div class="section-body">
+    <div class="sub-heading">구현: 직원 목록 테이블, 근속연수 자동 계산, 재직/퇴직 상태</div>
+    <div class="sub-heading">갭</div>
+    <table>
+      <thead><tr><th>ID</th><th>항목</th><th>설명</th></tr></thead>
+      <tbody>
+        <tr><td><span class="id-tag id-gap">GAP-EMP-01</span></td><td>검색/필터 없음</td><td>이름, 부서별 필터 기능 없음</td></tr>
+        <tr><td><span class="id-tag id-gap">GAP-EMP-02</span></td><td>직원 상세 페이지 없음</td><td>클릭해서 상세 정보 조회 불가</td></tr>
+        <tr><td><span class="id-tag id-gap">GAP-EMP-03</span></td><td>직원 정보 편집 없음</td><td>이름/연락처/부서 변경 불가</td></tr>
+        <tr><td><span class="id-tag id-gap">GAP-EMP-04</span></td><td>정렬 기능 없음</td><td>컬럼별 정렬 불가</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="section-block" id="mod-att">
+  <div class="section-header">
+    <div class="icon icon-green">&#128197;</div>
+    <h2>2.4 인사관리 - 근태 관리</h2>
+    <span class="badge badge-yellow">갭 4건</span>
+  </div>
+  <div class="section-body">
+    <div class="sub-heading">구현: 캘린더 뷰, 8종 유형, 등록/삭제/필터/통계/직원요약</div>
+    <div class="sub-heading">갭</div>
+    <table>
+      <thead><tr><th>ID</th><th>항목</th><th>설명</th></tr></thead>
+      <tbody>
+        <tr><td><span class="id-tag id-gap">GAP-ATT-01</span></td><td>다일(연속) 등록 불가</td><td>연차 5일 = 5번 등록 필요</td></tr>
+        <tr><td><span class="id-tag id-gap">GAP-ATT-02</span></td><td>기존 기록 수정 불가</td><td>삭제 후 재등록만 가능</td></tr>
+        <tr><td><span class="id-tag id-gap">GAP-ATT-03</span></td><td>내보내기 없음</td><td>Excel/CSV 출력 불가</td></tr>
+        <tr><td><span class="id-tag id-gap">GAP-ATT-04</span></td><td>잔여 연차 관리 없음</td><td>연차 총일수/사용/잔여 추적 없음</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="section-block" id="mod-org">
+  <div class="section-header">
+    <div class="icon icon-blue">&#127969;</div>
+    <h2>2.5 인사관리 - 조직도</h2>
+    <span class="badge badge-yellow">갭 2건</span>
+  </div>
+  <div class="section-body">
+    <div class="sub-heading">구현: 부서별 카드, 직급 정렬, 리더 강조, 인원수</div>
+    <div class="sub-heading">갭</div>
+    <table>
+      <thead><tr><th>ID</th><th>항목</th><th>설명</th></tr></thead>
+      <tbody>
+        <tr><td><span class="id-tag id-gap">GAP-ORG-01</span></td><td>직원 상세 링크 없음</td><td>클릭해도 상세 페이지 이동 불가</td></tr>
+        <tr><td><span class="id-tag id-gap">GAP-ORG-02</span></td><td>무소속 직원 미표시</td><td>department_id NULL인 직원 누락</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="section-block" id="mod-welfare">
+  <div class="section-header">
+    <div class="icon icon-green">&#127873;</div>
+    <h2>2.6 인사관리 - 복리후생</h2>
+    <span class="badge badge-yellow">갭 2건</span>
+  </div>
+  <div class="section-body">
+    <div class="sub-heading">구현: 5종 이벤트, D-Day 뱃지, 상태토글, 삭제, 3종필터, 직원요약</div>
+    <div class="sub-heading">갭</div>
+    <table>
+      <thead><tr><th>ID</th><th>항목</th><th>설명</th></tr></thead>
+      <tbody>
+        <tr><td><span class="id-tag id-gap">GAP-WEL-01</span></td><td>이벤트 편집 불가</td><td>삭제 후 재생성만 가능</td></tr>
+        <tr><td><span class="id-tag id-gap">GAP-WEL-02</span></td><td>반복 이벤트 없음</td><td>생일/건강검진 매년 자동 생성 안됨</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 2.7 Project -->
+<div class="section-block" id="mod-project">
+  <div class="section-header">
+    <div class="icon icon-red">&#128196;</div>
+    <h2>2.7 프로젝트 관리</h2>
+    <span class="badge badge-red">Critical 1건 + 갭 5건</span>
+  </div>
+  <div class="section-body">
+    <div class="sub-heading">구현: 목록/필터/자동지연/등록/상세/진행률수정/마일스톤CRUD/팀원조회</div>
+    <div class="sub-heading">알려진 문제</div>
+    <table>
+      <thead><tr><th>ID</th><th>문제</th><th>심각도</th><th>설명</th></tr></thead>
+      <tbody>
+        <tr><td><span class="id-tag id-bug">BUG-PRJ-01</span></td><td>owner_id/department_id 하드코딩</td><td><span class="badge badge-red">Critical</span></td><td>프로젝트 생성 시 owner_id=1, department_id=1 고정</td></tr>
+      </tbody>
+    </table>
+    <div class="sub-heading">갭</div>
+    <table>
+      <thead><tr><th>ID</th><th>항목</th><th>설명</th></tr></thead>
+      <tbody>
+        <tr><td><span class="id-tag id-gap">GAP-PRJ-01</span></td><td>팀원 추가/삭제 불가</td><td>project_members 관리 UI 없음</td></tr>
+        <tr><td><span class="id-tag id-gap">GAP-PRJ-02</span></td><td>프로젝트명/날짜 수정 불가</td><td>제목, 카테고리, 마감일 수정 불가</td></tr>
+        <tr><td><span class="id-tag id-gap">GAP-PRJ-03</span></td><td>마일스톤 제목 수정 불가</td><td>삭제 후 재생성만 가능</td></tr>
+        <tr><td><span class="id-tag id-gap">GAP-PRJ-04</span></td><td>프로젝트 삭제 없음</td><td>삭제 기능 자체 없음</td></tr>
+        <tr><td><span class="id-tag id-gap">GAP-PRJ-05</span></td><td>검색 없음</td><td>프로젝트명 키워드 검색 불가</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 2.8 Worklog -->
+<div class="section-block" id="mod-worklog">
+  <div class="section-header">
+    <div class="icon icon-green">&#128221;</div>
+    <h2>2.8 업무일지</h2>
+    <span class="badge badge-yellow">갭 2건</span>
+  </div>
+  <div class="section-body">
+    <div class="sub-heading">구현: 날짜별 등록, 3종 유형, 달성토글, 삭제, 근태인라인, 마감배너, 미작성자, 휴일처리, 필터, 읽기전용</div>
+    <div class="sub-heading">갭</div>
+    <table>
+      <thead><tr><th>ID</th><th>항목</th><th>설명</th></tr></thead>
+      <tbody>
+        <tr><td><span class="id-tag id-gap">GAP-WL-01</span></td><td>업무 편집 불가</td><td>등록 후 제목/설명 수정 불가</td></tr>
+        <tr><td><span class="id-tag id-gap">GAP-WL-02</span></td><td>관리자 제외 미흡</td><td>admin 역할도 미작성자 목록에 포함될 수 있음</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 2.9 Report -->
+<div class="section-block" id="mod-report">
+  <div class="section-header">
+    <div class="icon icon-blue">&#128202;</div>
+    <h2>2.9 업무 리포트</h2>
+    <span class="badge badge-yellow">갭 2건</span>
+  </div>
+  <div class="section-body">
+    <div class="sub-heading">구현: 3종 보고서, KPI, 직책별 달성률, 상세목록, 미작성자, 인쇄, 결재란</div>
+    <div class="sub-heading">갭</div>
+    <table>
+      <thead><tr><th>ID</th><th>항목</th><th>설명</th></tr></thead>
+      <tbody>
+        <tr><td><span class="id-tag id-gap">GAP-RPT-01</span></td><td>부서별 필터 없음</td><td>전체 직원 대상만</td></tr>
+        <tr><td><span class="id-tag id-gap">GAP-RPT-02</span></td><td>PDF 직접 다운로드 없음</td><td>브라우저 인쇄 기능에 의존</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 2.10 Documents -->
+<div class="section-block" id="mod-doc">
+  <div class="section-header">
+    <div class="icon icon-yellow">&#128195;</div>
+    <h2>2.10 공문서 관리</h2>
+    <span class="badge badge-yellow">갭 2건</span>
+  </div>
+  <div class="section-body">
+    <div class="sub-heading">구현: 목록, 필터, 미처리경고, 등록, 상세, 상태변경, 처리이력</div>
+    <div class="sub-heading">갭</div>
+    <table>
+      <thead><tr><th>ID</th><th>항목</th><th>설명</th></tr></thead>
+      <tbody>
+        <tr><td><span class="id-tag id-gap">GAP-DOC-01</span></td><td>파일 첨부 없음</td><td>file_url 컬럼 있으나 업로드 UI 없음</td></tr>
+        <tr><td><span class="id-tag id-gap">GAP-DOC-02</span></td><td>검색 없음</td><td>제목/문서번호 키워드 검색 불가</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 2.11 Education -->
+<div class="section-block" id="mod-edu">
+  <div class="section-header">
+    <div class="icon icon-blue">&#127891;</div>
+    <h2>2.11 교육 관리</h2>
+    <span class="badge badge-yellow">갭 3건</span>
+  </div>
+  <div class="section-body">
+    <div class="sub-heading">구현: 일정목록, 필터, 등록, 상세, 출석관리, 추가참석자</div>
+    <div class="sub-heading">갭</div>
+    <table>
+      <thead><tr><th>ID</th><th>항목</th><th>설명</th></tr></thead>
+      <tbody>
+        <tr><td><span class="id-tag id-gap">GAP-EDU-01</span></td><td>교육 편집 없음</td><td>등록 후 수정 불가</td></tr>
+        <tr><td><span class="id-tag id-gap">GAP-EDU-02</span></td><td>교육 삭제 없음</td><td>삭제 기능 없음 (취소만)</td></tr>
+        <tr><td><span class="id-tag id-gap">GAP-EDU-03</span></td><td>교육 이수 이력 없음</td><td>직원별 교육 이수 현황 조회 불가</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 2.12 Inspections -->
+<div class="section-block" id="mod-inspect">
+  <div class="section-header">
+    <div class="icon icon-red">&#128737;</div>
+    <h2>2.12 법정점검 관리</h2>
+    <span class="badge badge-yellow">갭 2건</span>
+  </div>
+  <div class="section-body">
+    <div class="sub-heading">구현: 목록, 자동상태, 필터, 등록, 상세, 이력기록, 경고배너</div>
+    <div class="sub-heading">갭</div>
+    <table>
+      <thead><tr><th>ID</th><th>항목</th><th>설명</th></tr></thead>
+      <tbody>
+        <tr><td><span class="id-tag id-gap">GAP-INS-01</span></td><td>점검 편집/삭제 없음</td><td>등록 후 수정 불가</td></tr>
+        <tr><td><span class="id-tag id-gap">GAP-INS-02</span></td><td>인증서 파일 업로드 없음</td><td>certificate_url 컬럼 있으나 업로드 UI 없음</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 2.13 Schedule -->
+<div class="section-block" id="mod-schedule">
+  <div class="section-header">
+    <div class="icon icon-green">&#128467;</div>
+    <h2>2.13 연간 일정</h2>
+    <span class="badge badge-yellow">갭 1건</span>
+  </div>
+  <div class="section-body">
+    <div class="sub-heading">구현: 목록/캘린더 뷰, 필터, 등록, 반복유형 3종, D-Day</div>
+    <div class="sub-heading">갭</div>
+    <table>
+      <thead><tr><th>ID</th><th>항목</th><th>설명</th></tr></thead>
+      <tbody>
+        <tr><td><span class="id-tag id-gap">GAP-SCH-01</span></td><td>일정 편집/삭제 없음</td><td>등록 후 수정 불가</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 2.14 Notifications -->
+<div class="section-block" id="mod-notif">
+  <div class="section-header">
+    <div class="icon icon-yellow">&#128276;</div>
+    <h2>2.14 알림 센터</h2>
+    <span class="badge badge-red">갭 5건</span>
+  </div>
+  <div class="section-body">
+    <div class="sub-heading">구현: 목록 50건, 우선순위 뱃지, 미읽음 표시/건수</div>
+    <div class="sub-heading">갭</div>
+    <table>
+      <thead><tr><th>ID</th><th>항목</th><th>설명</th></tr></thead>
+      <tbody>
+        <tr><td><span class="id-tag id-gap">GAP-NTF-01</span></td><td>읽음 처리 없음</td><td>is_read 토글 기능 미구현</td></tr>
+        <tr><td><span class="id-tag id-gap">GAP-NTF-02</span></td><td>모듈별 필터 없음</td><td>전체만 표시</td></tr>
+        <tr><td><span class="id-tag id-gap">GAP-NTF-03</span></td><td>알림 클릭 시 이동 없음</td><td>해당 항목으로 링크 없음</td></tr>
+        <tr><td><span class="id-tag id-gap">GAP-NTF-04</span></td><td>실시간 알림 없음</td><td>페이지 새로고침 필요</td></tr>
+        <tr><td><span class="id-tag id-gap">GAP-NTF-05</span></td><td>알림 삭제/일괄 읽음 없음</td><td>관리 기능 부재</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 2.15 Admin User -->
+<div class="section-block" id="mod-admin-user">
+  <div class="section-header">
+    <div class="icon icon-navy">&#128736;</div>
+    <h2>2.15 관리자 - 사용자 관리</h2>
+    <span class="badge badge-yellow">갭 2건</span>
+  </div>
+  <div class="section-body">
+    <div class="sub-heading">구현: 목록, 추가, 역할변경, 활성토글, 비밀번호초기화</div>
+    <div class="sub-heading">갭</div>
+    <table>
+      <thead><tr><th>ID</th><th>항목</th><th>설명</th></tr></thead>
+      <tbody>
+        <tr><td><span class="id-tag id-gap">GAP-ADM-01</span></td><td>부서 배정 없음</td><td>사용자 추가 시 부서 지정 UI 없음</td></tr>
+        <tr><td><span class="id-tag id-gap">GAP-ADM-02</span></td><td>사용자 정보 편집 제한</td><td>이름, 연락처, 이메일 수정 불가</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 2.16 Admin Dept -->
+<div class="section-block" id="mod-admin-dept">
+  <div class="section-header">
+    <div class="icon icon-navy">&#127970;</div>
+    <h2>2.16 관리자 - 부서 관리</h2>
+    <span class="badge badge-yellow">갭 1건</span>
+  </div>
+  <div class="section-body">
+    <div class="sub-heading">구현: 목록, 추가, 수정, 삭제(직원 있으면 차단)</div>
+    <div class="sub-heading">갭</div>
+    <table>
+      <thead><tr><th>ID</th><th>항목</th><th>설명</th></tr></thead>
+      <tbody>
+        <tr><td><span class="id-tag id-gap">GAP-DEPT-01</span></td><td>부서장 지정 없음</td><td>manager_id 컬럼 있으나 UI 없음</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 2.17 Cron -->
+<div class="section-block" id="mod-cron">
+  <div class="section-header">
+    <div class="icon icon-blue">&#9200;</div>
+    <h2>2.17 Cron / 자동화</h2>
+    <span class="badge badge-yellow">갭 4건</span>
+  </div>
+  <div class="section-body">
+    <div class="sub-heading">구현: 업무일지 미작성 알림, 이메일 발송, 휴일 스킵, 근태 고려</div>
+    <div class="sub-heading">갭</div>
+    <table>
+      <thead><tr><th>ID</th><th>항목</th><th>설명</th></tr></thead>
+      <tbody>
+        <tr><td><span class="id-tag id-gap">GAP-CRON-01</span></td><td>SMS 미구현</td><td>코드에 플레이스홀더만 존재</td></tr>
+        <tr><td><span class="id-tag id-gap">GAP-CRON-02</span></td><td>카카오 알림톡 미구현</td><td>코드에 플레이스홀더만 존재</td></tr>
+        <tr><td><span class="id-tag id-gap">GAP-CRON-03</span></td><td>점검 만료 알림 없음</td><td>D-Day 자동 알림 미구현</td></tr>
+        <tr><td><span class="id-tag id-gap">GAP-CRON-04</span></td><td>교육 일정 알림 없음</td><td>교육 임박 자동 알림 미구현</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ 3. COMMON ═══════════════════════════════ -->
+<div class="section-block" id="common">
+  <div class="section-header">
+    <div class="icon icon-green">&#9989;</div>
+    <h2>3. 공통 요구사항</h2>
+  </div>
+  <div class="section-body">
+    <table>
+      <thead><tr><th>ID</th><th>항목</th><th>상태</th></tr></thead>
+      <tbody>
+        <tr><td><span class="id-tag id-cr">CR-UI-01</span></td><td>반응형 디자인 (모바일/데스크톱)</td><td><span class="badge badge-green">구현</span></td></tr>
+        <tr><td><span class="id-tag id-cr">CR-UI-02</span></td><td>한국어 인터페이스</td><td><span class="badge badge-green">구현</span></td></tr>
+        <tr><td><span class="id-tag id-cr">CR-UI-03</span></td><td>로딩 상태 표시 (스피너)</td><td><span class="badge badge-green">부분 구현</span></td></tr>
+        <tr><td><span class="id-tag id-cr">CR-UI-04</span></td><td>에러 메시지 사용자 친화적 표시</td><td><span class="badge badge-yellow">부분 미흡</span></td></tr>
+        <tr><td><span class="id-tag id-cr">CR-UI-05</span></td><td>빈 상태(Empty State) 안내</td><td><span class="badge badge-green">구현</span></td></tr>
+        <tr><td><span class="id-tag id-cr">CR-DATA-01</span></td><td>샘플 모드에서 모든 기능 체험</td><td><span class="badge badge-green">구현</span></td></tr>
+        <tr><td><span class="id-tag id-cr">CR-DATA-02</span></td><td>샘플 모드에서 데이터 변경 차단</td><td><span class="badge badge-green">구현</span></td></tr>
+        <tr><td><span class="id-tag id-cr">CR-DATA-03</span></td><td>날짜 형식 통일 (YYYY.MM.DD)</td><td><span class="badge badge-green">구현</span></td></tr>
+        <tr><td><span class="id-tag id-cr">CR-PERM-01</span></td><td>admin 전체 접근</td><td><span class="badge badge-green">구현</span></td></tr>
+        <tr><td><span class="id-tag id-cr">CR-PERM-02</span></td><td>manager 데이터 CRUD</td><td><span class="badge badge-green">구현</span></td></tr>
+        <tr><td><span class="id-tag id-cr">CR-PERM-03</span></td><td>staff 본인 업무 + 조회</td><td><span class="badge badge-green">구현</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ 4. SECURITY ═══════════════════════════════ -->
+<div class="section-block" id="security">
+  <div class="section-header">
+    <div class="icon icon-red">&#128272;</div>
+    <h2>4. 보안 요구사항</h2>
+  </div>
+  <div class="section-body">
+    <table>
+      <thead><tr><th>ID</th><th>항목</th><th>현재 상태</th><th>요구사항</th></tr></thead>
+      <tbody>
+        <tr><td><span class="id-tag id-sec">SEC-01</span></td><td>비밀번호 해싱</td><td><span class="badge badge-red">평문 저장</span></td><td>bcrypt 또는 argon2로 해싱 필수</td></tr>
+        <tr><td><span class="id-tag id-sec">SEC-02</span></td><td>RLS (Row Level Security)</td><td><span class="badge badge-red">미구현</span></td><td>Supabase RLS 정책 설정 필요</td></tr>
+        <tr><td><span class="id-tag id-sec">SEC-03</span></td><td>입력값 검증</td><td><span class="badge badge-yellow">부분</span></td><td>서버 사이드 유효성 검증 강화</td></tr>
+        <tr><td><span class="id-tag id-sec">SEC-04</span></td><td>CSRF 보호</td><td><span class="badge badge-yellow">미구현</span></td><td>내부 시스템, 중간 우선순위</td></tr>
+        <tr><td><span class="id-tag id-sec">SEC-05</span></td><td>로그인 시도 제한</td><td><span class="badge badge-yellow">미구현</span></td><td>내부 시스템, 중간 우선순위</td></tr>
+        <tr><td><span class="id-tag id-sec">SEC-06</span></td><td>감사 로그</td><td><span class="badge badge-yellow">부분</span></td><td>document/inspection_histories만 존재</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ 5. GAP ANALYSIS ═══════════════════════════════ -->
+<div class="section-block" id="gap">
+  <div class="section-header">
+    <div class="icon icon-yellow">&#9888;</div>
+    <h2>5. 갭 분석 (우선순위별)</h2>
+  </div>
+  <div class="section-body">
+
+    <div class="gap-section">
+      <h4><span style="display:inline-block;width:12px;height:12px;background:var(--red);border-radius:50%;"></span> Critical (5월 시행 전 반드시 수정)</h4>
+      <table>
+        <thead><tr><th>ID</th><th>항목</th><th>모듈</th><th>설명</th></tr></thead>
+        <tbody>
+          <tr><td><span class="id-tag id-bug">BUG-AUTH-01</span></td><td>평문 비밀번호</td><td>인증</td><td>비밀번호 해싱 적용 필수</td></tr>
+          <tr><td><span class="id-tag id-bug">BUG-PRJ-01</span></td><td>owner_id 하드코딩</td><td>프로젝트</td><td>로그인 사용자 기반으로 변경</td></tr>
+          <tr><td><span class="id-tag id-gap">GAP-ADM-01</span></td><td>부서 배정 없음</td><td>관리자</td><td>사용자 추가 시 부서 선택 필수</td></tr>
+          <tr><td><span class="id-tag id-gap">GAP-NTF-01</span></td><td>읽음 처리 없음</td><td>알림</td><td>알림 읽음 토글 기능</td></tr>
+          <tr><td><span class="id-tag id-gap">GAP-ORG-02</span></td><td>무소속 직원</td><td>조직도</td><td>department_id NULL 직원 표시</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="gap-section">
+      <h4><span style="display:inline-block;width:12px;height:12px;background:var(--yellow);border-radius:50%;"></span> High (5월 중 해결 권장)</h4>
+      <table>
+        <thead><tr><th>ID</th><th>항목</th><th>모듈</th><th>설명</th></tr></thead>
+        <tbody>
+          <tr><td><span class="id-tag id-gap">GAP-EMP-01</span></td><td>직원 검색/필터</td><td>직원관리</td><td>이름/부서 검색</td></tr>
+          <tr><td><span class="id-tag id-gap">GAP-ATT-01</span></td><td>연속 등록</td><td>근태</td><td>다일 연차 한번에 등록</td></tr>
+          <tr><td><span class="id-tag id-gap">GAP-ATT-04</span></td><td>잔여 연차</td><td>근태</td><td>연차 총일수/잔여 추적</td></tr>
+          <tr><td><span class="id-tag id-gap">GAP-PRJ-01</span></td><td>팀원 관리</td><td>프로젝트</td><td>팀원 추가/삭제</td></tr>
+          <tr><td><span class="id-tag id-gap">GAP-PRJ-02</span></td><td>프로젝트 편집</td><td>프로젝트</td><td>제목/마감일 수정</td></tr>
+          <tr><td><span class="id-tag id-gap">GAP-DOC-01</span></td><td>파일 첨부</td><td>문서</td><td>공문서 파일 업로드</td></tr>
+          <tr><td><span class="id-tag id-gap">GAP-NTF-03</span></td><td>알림 링크</td><td>알림</td><td>클릭 시 해당 항목 이동</td></tr>
+          <tr><td><span class="id-tag id-gap">GAP-ADM-02</span></td><td>사용자 편집</td><td>관리자</td><td>이름/연락처/이메일 수정</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="gap-section">
+      <h4><span style="display:inline-block;width:12px;height:12px;background:var(--blue);border-radius:50%;"></span> Medium (5월 이후 개선)</h4>
+      <table>
+        <thead><tr><th>ID</th><th>항목</th><th>모듈</th></tr></thead>
+        <tbody>
+          <tr><td><span class="id-tag id-gap">GAP-WEL-02</span></td><td>반복 이벤트</td><td>복리후생</td></tr>
+          <tr><td><span class="id-tag id-gap">GAP-EDU-03</span></td><td>이수 이력</td><td>교육</td></tr>
+          <tr><td><span class="id-tag id-gap">GAP-RPT-01</span></td><td>부서별 필터</td><td>리포트</td></tr>
+          <tr><td><span class="id-tag id-gap">GAP-CRON-03</span></td><td>점검 알림 자동화</td><td>점검</td></tr>
+          <tr><td><span class="id-tag id-gap">GAP-CRON-04</span></td><td>교육 알림 자동화</td><td>교육</td></tr>
+          <tr><td><span class="id-tag id-gap">GAP-NTF-02</span></td><td>모듈별 필터</td><td>알림</td></tr>
+          <tr><td><span class="id-tag id-gap">GAP-NTF-04</span></td><td>실시간 알림</td><td>알림</td></tr>
+          <tr><td><span class="id-tag id-gap">GAP-ATT-03</span></td><td>내보내기</td><td>근태</td></tr>
+          <tr><td><span class="id-tag id-gap">GAP-INS-02</span></td><td>인증서 업로드</td><td>점검</td></tr>
+          <tr><td><span class="id-tag id-sec">SEC-02</span></td><td>RLS 정책</td><td>보안</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="gap-section">
+      <h4><span style="display:inline-block;width:12px;height:12px;background:var(--gray-300);border-radius:50%;"></span> Low (선택적 개선)</h4>
+      <table>
+        <thead><tr><th>ID</th><th>항목</th><th>모듈</th></tr></thead>
+        <tbody>
+          <tr><td><span class="id-tag id-gap">GAP-EMP-02</span></td><td>직원 상세 페이지</td><td>직원관리</td></tr>
+          <tr><td><span class="id-tag id-gap">GAP-EMP-04</span></td><td>컬럼 정렬</td><td>직원관리</td></tr>
+          <tr><td><span class="id-tag id-gap">GAP-ORG-01</span></td><td>직원 링크</td><td>조직도</td></tr>
+          <tr><td><span class="id-tag id-gap">GAP-RPT-02</span></td><td>PDF 다운로드</td><td>리포트</td></tr>
+          <tr><td><span class="id-tag id-gap">GAP-DEPT-01</span></td><td>부서장 지정</td><td>부서관리</td></tr>
+          <tr><td><span class="id-tag id-gap">GAP-CRON-01</span></td><td>SMS 발송</td><td>알림</td></tr>
+          <tr><td><span class="id-tag id-gap">GAP-CRON-02</span></td><td>카카오 알림톡</td><td>알림</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ 6. PHASES ═══════════════════════════════ -->
+<div class="section-block" id="phases">
+  <div class="section-header">
+    <div class="icon icon-navy">&#128640;</div>
+    <h2>6. 우선순위별 작업 목록</h2>
+  </div>
+  <div class="section-body">
+    <div class="phase-timeline">
+
+      <div class="phase-group">
+        <div class="phase-label"><span class="phase-dot" style="background:var(--red)"></span> Phase 1: 시행 전 필수 수정 (4월 중)</div>
+        <ol class="phase-items">
+          <li>비밀번호 해싱 적용 (bcrypt)</li>
+          <li>프로젝트 생성 시 owner_id/department_id를 로그인 사용자 기반으로</li>
+          <li>사용자 추가 시 부서 선택 기능</li>
+          <li>알림 읽음 처리 기능</li>
+          <li>무소속(department_id=null) 직원 처리</li>
+        </ol>
+      </div>
+
+      <div class="phase-group">
+        <div class="phase-label"><span class="phase-dot" style="background:var(--yellow)"></span> Phase 2: 시행 초기 필수 개선 (5월 1~2주)</div>
+        <ol class="phase-items" start="6">
+          <li>직원 검색/필터</li>
+          <li>근태 연속 등록 (다일 선택)</li>
+          <li>프로젝트 팀원 관리 UI</li>
+          <li>프로젝트 기본 정보 수정</li>
+          <li>알림 클릭 시 해당 페이지 이동</li>
+          <li>사용자 정보 편집 (이름, 연락처 등)</li>
+        </ol>
+      </div>
+
+      <div class="phase-group">
+        <div class="phase-label"><span class="phase-dot" style="background:var(--blue)"></span> Phase 3: 운영 안정화 (5월 3~4주)</div>
+        <ol class="phase-items" start="12">
+          <li>공문서 파일 첨부</li>
+          <li>잔여 연차 관리</li>
+          <li>부서별 보고서 필터</li>
+          <li>점검/교육 알림 자동화</li>
+        </ol>
+      </div>
+
+      <div class="phase-group">
+        <div class="phase-label"><span class="phase-dot" style="background:var(--gray-300)"></span> Phase 4: 고도화 (6월~)</div>
+        <ol class="phase-items" start="16">
+          <li>실시간 알림 (SSE/WebSocket)</li>
+          <li>Excel/CSV 내보내기</li>
+          <li>교육 이수 이력 관리</li>
+          <li>RLS 보안 정책</li>
+          <li>SMS/카카오 알림톡</li>
+        </ol>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ 7. TEST CHECKLIST ═══════════════════════════════ -->
+<div class="section-block" id="tests">
+  <div class="section-header">
+    <div class="icon icon-green">&#9745;</div>
+    <h2>7. 테스트 체크리스트</h2>
+  </div>
+  <div class="section-body">
+
+    <div class="sub-heading">7.1 인증</div>
+    <ul class="checklist">
+      <li>정상 로그인 (이름 + 비밀번호)</li>
+      <li>잘못된 비밀번호 에러 메시지</li>
+      <li>미등록 사용자 에러 메시지</li>
+      <li>비활성 사용자 로그인 불가</li>
+      <li>샘플 모드 진입 + 데모 데이터</li>
+      <li>샘플 모드 데이터 변경 차단</li>
+      <li>비밀번호 변경 후 재로그인</li>
+      <li>로그아웃 후 로그인 페이지</li>
+      <li>쿠키 만료 시 리다이렉트</li>
+    </ul>
+
+    <div class="sub-heading">7.2 대시보드</div>
+    <ul class="checklist">
+      <li>KPI 카드 4종 정확한 수치</li>
+      <li>지연 프로젝트 목록</li>
+      <li>점검 임박 목록 (D-30)</li>
+      <li>미처리 공문 (3일 경과)</li>
+      <li>부서별 달성률 계산</li>
+      <li>최근 알림 10건</li>
+    </ul>
+
+    <div class="sub-heading">7.3 직원 관리</div>
+    <ul class="checklist">
+      <li>전 직원 목록 표시</li>
+      <li>근속연수 계산 정확성</li>
+      <li>재직/퇴직 상태 뱃지</li>
+      <li>부서명 정상 표시</li>
+    </ul>
+
+    <div class="sub-heading">7.4 근태 관리</div>
+    <ul class="checklist">
+      <li>캘린더 월 이동</li>
+      <li>날짜 클릭 상세 표시</li>
+      <li>근태 등록 (8종 유형)</li>
+      <li>동일 직원+날짜 UPSERT</li>
+      <li>근태 삭제</li>
+      <li>부서/유형 필터</li>
+      <li>월간 통계 정확성</li>
+      <li>staff 등록/삭제 버튼 숨김</li>
+      <li>샘플 모드 변경 차단</li>
+    </ul>
+
+    <div class="sub-heading">7.5 조직도</div>
+    <ul class="checklist">
+      <li>부서별 카드 표시</li>
+      <li>직급 순서 정렬</li>
+      <li>리더 하이라이트</li>
+      <li>빈 부서 처리</li>
+    </ul>
+
+    <div class="sub-heading">7.6 복리후생</div>
+    <ul class="checklist">
+      <li>HR 이벤트 등록 (5종)</li>
+      <li>D-Day 뱃지 색상</li>
+      <li>상태 토글 (대기/완료)</li>
+      <li>이벤트 삭제 + 확인</li>
+      <li>유형/상태/부서 필터</li>
+      <li>긴급/초과 알림 카드</li>
+    </ul>
+
+    <div class="sub-heading">7.7 프로젝트 관리</div>
+    <ul class="checklist">
+      <li>프로젝트 목록 표시</li>
+      <li>상태/카테고리 필터</li>
+      <li>자동 지연 감지</li>
+      <li>프로젝트 등록 반영</li>
+      <li>진행률/상태 표시</li>
+      <li>진행률 수정 + 저장</li>
+      <li>상태 변경</li>
+      <li>마일스톤 추가</li>
+      <li>마일스톤 완료 토글</li>
+      <li>마일스톤 삭제</li>
+      <li>팀원 목록 표시</li>
+      <li>staff 수정 버튼 숨김</li>
+    </ul>
+
+    <div class="sub-heading">7.8 업무일지</div>
+    <ul class="checklist">
+      <li>당일 업무 등록 (3종)</li>
+      <li>달성 토글 + 미달성 사유</li>
+      <li>업무 삭제 (manager)</li>
+      <li>근태 인라인 편집</li>
+      <li>마감 배너 시간</li>
+      <li>미작성자 분류</li>
+      <li>휴일 처리 + 특근</li>
+      <li>과거 날짜 읽기 전용</li>
+      <li>날짜 이동</li>
+      <li>유형/담당자 필터</li>
+    </ul>
+
+    <div class="sub-heading">7.9 업무 리포트</div>
+    <ul class="checklist">
+      <li>당일 보고서</li>
+      <li>주간 보고서 (월~일)</li>
+      <li>월간 보고서</li>
+      <li>KPI 요약 수치</li>
+      <li>직책별 달성률</li>
+      <li>인쇄 레이아웃</li>
+      <li>결재란 (인쇄 시)</li>
+    </ul>
+
+    <div class="sub-heading">7.10 공문서 관리</div>
+    <ul class="checklist">
+      <li>문서 등록 (필수 필드)</li>
+      <li>보존기한 자동 계산</li>
+      <li>미처리 경고 배너</li>
+      <li>상태/카테고리 필터</li>
+      <li>문서 상세 정보 카드</li>
+      <li>처리 이력 타임라인</li>
+      <li>상태 변경 워크플로우</li>
+    </ul>
+
+    <div class="sub-heading">7.11 교육 관리</div>
+    <ul class="checklist">
+      <li>교육 일정 등록</li>
+      <li>대상 부서 복수 선택</li>
+      <li>D-Day 뱃지 표시</li>
+      <li>유형/상태/부서 필터</li>
+      <li>출석 현황</li>
+      <li>개별 출석 토글</li>
+      <li>전원 참석/초기화</li>
+      <li>추가 참석자 등록</li>
+    </ul>
+
+    <div class="sub-heading">7.12 법정점검 관리</div>
+    <ul class="checklist">
+      <li>점검 등록 (법정주기)</li>
+      <li>차기 점검일 자동 계산</li>
+      <li>상태 자동 판별</li>
+      <li>만료 경고 배너</li>
+      <li>카테고리/상태/부서 필터</li>
+      <li>이력 타임라인</li>
+      <li>이력 기록 (합격/불합격)</li>
+    </ul>
+
+    <div class="sub-heading">7.13 연간 일정</div>
+    <ul class="checklist">
+      <li>일정 등록 (반복 3종)</li>
+      <li>목록/캘린더 뷰 전환</li>
+      <li>카테고리/관점 필터</li>
+      <li>D-Day 뱃지</li>
+      <li>매년/매월 반복 로직</li>
+    </ul>
+
+    <div class="sub-heading">7.14 알림 센터</div>
+    <ul class="checklist">
+      <li>알림 목록 50건</li>
+      <li>우선순위 뱃지 색상</li>
+      <li>미읽음 표시</li>
+      <li>모듈별 아이콘/색상</li>
+    </ul>
+
+    <div class="sub-heading">7.15 관리자 - 사용자</div>
+    <ul class="checklist">
+      <li>사용자 추가 (기본 PW 0000)</li>
+      <li>역할 변경</li>
+      <li>활성/비활성 토글</li>
+      <li>비밀번호 초기화</li>
+      <li>admin만 접근 가능</li>
+    </ul>
+
+    <div class="sub-heading">7.16 관리자 - 부서</div>
+    <ul class="checklist">
+      <li>부서 추가</li>
+      <li>부서 수정 (이름, 코드)</li>
+      <li>부서 삭제 (직원 있으면 차단)</li>
+      <li>인원수 표시 정확성</li>
+    </ul>
+
+    <div class="sub-heading">7.17 크로스 모듈</div>
+    <ul class="checklist">
+      <li>사이드바 메뉴 전체 동작</li>
+      <li>모바일 햄버거 메뉴</li>
+      <li>역할별 메뉴 표시</li>
+      <li>브라우저 뒤로가기</li>
+      <li>미로그인 리다이렉트</li>
+      <li>404 페이지 처리</li>
+    </ul>
+
+    <div class="sub-heading">7.18 Supabase 연동 (실서버)</div>
+    <ul class="checklist">
+      <li>모든 테이블 생성 확인</li>
+      <li>외래키 관계 정상</li>
+      <li>시드 데이터 삽입</li>
+      <li>CRUD 전 모듈 실서버 테스트</li>
+      <li>환경변수 설정 확인</li>
+      <li>Vercel 배포 후 정상 동작</li>
+    </ul>
+
+  </div>
+</div>
+
+<!-- Footer -->
+<div style="text-align:center; padding:40px 0 20px; color:var(--gray-500); font-size:12px;">
+  이 문서는 코드 분석 기반으로 자동 생성되었습니다. 담당자 리뷰 후 확정 필요.<br>
+  KOG International MSS &middot; 2026-04-16 &middot; v1.0
+</div>
+
+</main>
+</div>
+
+<!-- Sidebar active link tracking -->
+<script>
+  const links = document.querySelectorAll('.toc li:not(.section) a');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const id = e.target.id;
+        const link = document.querySelector(`.toc a[href="#${id}"]`);
+        if (link) link.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -60% 0px' });
+  document.querySelectorAll('[id]').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>

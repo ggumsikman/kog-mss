@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
+import bcrypt from 'bcryptjs'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -20,14 +21,17 @@ export async function POST(request: NextRequest) {
   if (!await assertAdmin()) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   const body = await request.json()
+  const plainPassword = body.password || '0000'
+  const hashedPassword = await bcrypt.hash(plainPassword, 10)
 
   const { data, error } = await supabase.from('users').insert([{
     name:          body.name,
     phone:         body.phone || null,
     email:         body.email || null,
-    password_hash: body.password || '0000',
+    password_hash: hashedPassword,
     position:      body.position || null,
     role:          body.role || 'employee',
+    department_id: body.department_id ? parseInt(body.department_id) : null,
     is_active:     true,
     joined_at:     body.joined_at || null,
   }]).select().single()

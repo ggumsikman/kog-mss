@@ -15,7 +15,7 @@ export interface User {
   id: number
   name: string
   email: string
-  department_id: number
+  department_id: number | null
   position: string
   role: Role
   joined_at: string

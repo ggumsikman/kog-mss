@@ -105,6 +105,39 @@ export default async function OrgChartPage() {
           )
         })}
       </div>
+
+      {/* 미배정 직원 */}
+      {(() => {
+        const unassigned = users.filter((u: any) => !u.department_id)
+        if (unassigned.length === 0) return null
+        const sorted = [...unassigned].sort((a: any, b: any) =>
+          (positionOrder[a.position] ?? 99) - (positionOrder[b.position] ?? 99)
+        )
+        return (
+          <div className="mt-6">
+            <div className="bg-white rounded-xl border border-amber-200 overflow-hidden max-w-sm">
+              <div className="bg-amber-500 px-4 py-3 flex items-center gap-2">
+                <Users size={16} className="text-white/80" />
+                <span className="text-white font-bold text-sm">미배정 직원</span>
+                <span className="text-white/60 text-xs ml-auto">{unassigned.length}명</span>
+              </div>
+              <div className="divide-y divide-gray-50">
+                {sorted.map((member: any) => (
+                  <div key={member.id} className="px-4 py-2.5 flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-full bg-amber-100 flex items-center justify-center text-xs font-semibold text-amber-700">
+                      {member.name?.slice(0, 1)}
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-800">{member.name}</p>
+                      <p className="text-xs text-gray-400">{member.position}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )
+      })()}
     </div>
   )
 }
