@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOG MSS 사용 안내 - 업무일지 · 근태 관리</title>
+<style>
+  :root {
+    --navy: #1a2744;
+    --navy-light: #243352;
+    --blue: #3b82f6;
+    --blue-light: #dbeafe;
+    --green: #22c55e;
+    --green-light: #dcfce7;
+    --yellow: #eab308;
+    --yellow-light: #fef9c3;
+    --orange: #f97316;
+    --orange-light: #ffedd5;
+    --red: #ef4444;
+    --red-light: #fee2e2;
+    --purple: #a855f7;
+    --purple-light: #f3e8ff;
+    --pink: #ec4899;
+    --pink-light: #fce7f3;
+    --teal: #14b8a6;
+    --teal-light: #ccfbf1;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-500: #6b7280;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: var(--gray-800);
+    background: linear-gradient(180deg, #f0f4ff 0%, #f9fafb 300px, #f9fafb 100%);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+
+  /* ─── Hero Header ─── */
+  .hero {
+    background: linear-gradient(135deg, var(--navy) 0%, #2d3d5c 100%);
+    color: #fff;
+    padding: 60px 32px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -50px; right: -50px;
+    width: 300px; height: 300px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 50%;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -80px; left: -80px;
+    width: 250px; height: 250px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 50%;
+  }
+  .hero-content { position: relative; z-index: 1; max-width: 700px; margin: 0 auto; }
+  .hero .emoji { font-size: 56px; margin-bottom: 16px; }
+  .hero h1 { font-size: 32px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 12px; }
+  .hero p { font-size: 17px; opacity: 0.85; }
+
+  /* ─── Container ─── */
+  .container { max-width: 900px; margin: -40px auto 0; padding: 0 20px 80px; position: relative; z-index: 2; }
+
+  /* ─── Welcome Card ─── */
+  .welcome {
+    background: #fff;
+    border-radius: 20px;
+    padding: 32px;
+    box-shadow: 0 10px 40px rgba(26,39,68,0.08);
+    margin-bottom: 32px;
+  }
+  .welcome h2 { font-size: 22px; font-weight: 800; color: var(--navy); margin-bottom: 12px; }
+  .welcome p { font-size: 16px; color: var(--gray-600); }
+
+  /* ─── TOC (Table of Contents) ─── */
+  .toc {
+    background: linear-gradient(135deg, #fef3c7 0%, #fef9c3 100%);
+    border-radius: 20px;
+    padding: 28px;
+    margin-bottom: 40px;
+    border: 2px solid #fcd34d;
+  }
+  .toc h3 {
+    font-size: 18px;
+    font-weight: 800;
+    color: #92400e;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .toc-list { list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+  .toc-list a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: #fff;
+    border-radius: 10px;
+    text-decoration: none;
+    color: var(--navy);
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.2s;
+    border: 2px solid transparent;
+  }
+  .toc-list a:hover {
+    border-color: var(--yellow);
+    transform: translateX(4px);
+  }
+  .toc-list .num {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--yellow);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+
+  /* ─── Section ─── */
+  section {
+    background: #fff;
+    border-radius: 20px;
+    padding: 40px;
+    margin-bottom: 32px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+  }
+  .section-title {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--navy);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-title .icon-box {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+  }
+  .section-subtitle {
+    font-size: 15px;
+    color: var(--gray-500);
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 2px dashed var(--gray-200);
+  }
+
+  /* ─── Step Card ─── */
+  .step {
+    display: flex;
+    gap: 24px;
+    padding: 24px;
+    background: var(--gray-50);
+    border-radius: 16px;
+    margin-bottom: 20px;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  .step:hover { border-color: var(--blue); background: var(--blue-light); }
+  .step-number {
+    width: 56px; height: 56px;
+    border-radius: 16px;
+    background: var(--navy);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+  .step-content { flex: 1; }
+  .step h4 { font-size: 18px; font-weight: 800; color: var(--navy); margin-bottom: 8px; }
+  .step p { font-size: 15px; color: var(--gray-600); margin-bottom: 12px; }
+
+  /* ─── SVG illustration wrapper ─── */
+  .illustration {
+    background: #fff;
+    border: 2px solid var(--gray-200);
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 12px;
+    overflow: hidden;
+  }
+  .illustration-label {
+    font-size: 12px;
+    color: var(--gray-500);
+    margin-bottom: 8px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* ─── Tip / Warning boxes ─── */
+  .tip-box {
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin: 16px 0;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+  .tip-box .emoji { font-size: 24px; flex-shrink: 0; }
+  .tip-box .content { flex: 1; font-size: 14.5px; }
+  .tip-box .content strong { color: var(--gray-900); }
+
+  .tip-info { background: var(--blue-light); border-left: 4px solid var(--blue); }
+  .tip-success { background: var(--green-light); border-left: 4px solid var(--green); }
+  .tip-warning { background: var(--yellow-light); border-left: 4px solid var(--yellow); }
+  .tip-danger { background: var(--red-light); border-left: 4px solid var(--red); }
+
+  /* ─── Flow diagram ─── */
+  .flow {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    padding: 28px 16px;
+    background: var(--gray-50);
+    border-radius: 16px;
+    margin: 20px 0;
+  }
+  .flow-node {
+    background: #fff;
+    border: 2px solid var(--gray-200);
+    border-radius: 14px;
+    padding: 16px 20px;
+    text-align: center;
+    min-width: 140px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .flow-node.active { border-color: var(--blue); background: var(--blue-light); }
+  .flow-node.success { border-color: var(--green); background: var(--green-light); }
+  .flow-node.warn { border-color: var(--yellow); background: var(--yellow-light); }
+  .flow-node .flow-emoji { font-size: 32px; margin-bottom: 6px; }
+  .flow-node .flow-label { font-weight: 700; font-size: 14px; color: var(--gray-800); }
+  .flow-node .flow-desc { font-size: 11px; color: var(--gray-500); margin-top: 4px; }
+  .flow-arrow {
+    font-size: 24px;
+    color: var(--gray-400);
+  }
+
+  /* ─── Status badges ─── */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 99px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .b-wait    { background: var(--yellow-light); color: #92400e; }
+  .b-approve { background: var(--green-light); color: #166534; }
+  .b-reject  { background: var(--red-light); color: #991b1b; }
+
+  /* ─── Mock UI elements ─── */
+  .mock-ui {
+    background: #fff;
+    border: 2px solid var(--gray-200);
+    border-radius: 14px;
+    padding: 18px;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+  .mock-ui-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    color: var(--gray-800);
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--gray-100);
+  }
+  .mock-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: var(--navy);
+    color: #fff;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .mock-btn-secondary {
+    background: #fff;
+    color: var(--gray-700);
+    border: 1px solid var(--gray-200);
+  }
+  .mock-btn-green { background: var(--green); }
+  .mock-btn-red { background: var(--red); }
+  .mock-input {
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 13px;
+    color: var(--gray-600);
+    display: inline-block;
+    min-width: 180px;
+  }
+
+  /* ─── FAQ ─── */
+  .faq-item {
+    background: var(--gray-50);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 12px;
+    border-left: 4px solid var(--navy);
+  }
+  .faq-q {
+    font-weight: 700;
+    color: var(--navy);
+    font-size: 16px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .faq-q .mark { color: var(--blue); font-weight: 900; font-size: 20px; flex-shrink: 0; }
+  .faq-a {
+    font-size: 14.5px;
+    color: var(--gray-600);
+    padding-left: 32px;
+  }
+
+  /* ─── Feature grid ─── */
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin: 20px 0;
+  }
+  .feature-card {
+    background: #fff;
+    border: 2px solid var(--gray-200);
+    border-radius: 14px;
+    padding: 20px;
+    text-align: center;
+    transition: all 0.2s;
+  }
+  .feature-card:hover { border-color: var(--blue); transform: translateY(-2px); }
+  .feature-card .emoji { font-size: 36px; margin-bottom: 10px; }
+  .feature-card h5 { font-weight: 700; color: var(--navy); margin-bottom: 6px; }
+  .feature-card p { font-size: 13px; color: var(--gray-500); }
+
+  /* ─── Footer ─── */
+  footer {
+    text-align: center;
+    padding: 40px 20px 60px;
+    color: var(--gray-500);
+    font-size: 13px;
+  }
+
+  /* ─── Responsive ─── */
+  @media (max-width: 640px) {
+    .hero { padding: 40px 20px; }
+    .hero h1 { font-size: 24px; }
+    .hero p { font-size: 14px; }
+    section { padding: 28px 20px; }
+    .section-title { font-size: 20px; }
+    .step { flex-direction: column; gap: 16px; padding: 20px; }
+    .step-number { width: 44px; height: 44px; font-size: 18px; }
+    .flow { flex-direction: column; }
+    .flow-arrow { transform: rotate(90deg); }
+  }
+
+  @media print {
+    body { background: #fff; }
+    .hero { background: var(--navy) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    section { box-shadow: none; border: 1px solid var(--gray-200); break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ HERO ═══════════════ -->
+<div class="hero">
+  <div class="hero-content">
+    <div class="emoji">&#128075;</div>
+    <h1>KOG 경영관리 시스템 사용 안내</h1>
+    <p>업무일지 작성과 근태 관리, 이 가이드 하나로 끝내세요!</p>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- WELCOME -->
+<div class="welcome">
+  <h2>&#128075; 환영합니다!</h2>
+  <p>이 가이드는 <strong>업무일지 작성</strong>과 <strong>근태 관리</strong>를 누구나 쉽게 따라할 수 있도록 만들어졌습니다. 모바일·데스크톱 모두 사용 가능하며, 매일 사용하게 될 주요 기능을 그림과 함께 단계별로 설명합니다.</p>
+</div>
+
+<!-- TOC -->
+<div class="toc">
+  <h3>&#128214; 이 가이드에서 배울 내용</h3>
+  <ul class="toc-list">
+    <li><a href="#login"><span class="num">1</span>로그인하기</a></li>
+    <li><a href="#worklog-basic"><span class="num">2</span>업무일지 작성</a></li>
+    <li><a href="#worklog-edit"><span class="num">3</span>업무 수정·복사</a></li>
+    <li><a href="#deadline"><span class="num">4</span>아침 마감 시간</a></li>
+    <li><a href="#attendance"><span class="num">5</span>근태 신청</a></li>
+    <li><a href="#approval"><span class="num">6</span>승인 절차</a></li>
+    <li><a href="#leave"><span class="num">7</span>연차 확인</a></li>
+    <li><a href="#report"><span class="num">8</span>리포트 보기</a></li>
+    <li><a href="#faq"><span class="num">9</span>자주 묻는 질문</a></li>
+  </ul>
+</div>
+
+<!-- ═══════════════ 1. LOGIN ═══════════════ -->
+<section id="login">
+  <h2 class="section-title">
+    <span class="icon-box" style="background: var(--blue-light); color: var(--blue);">&#128273;</span>
+    1. 로그인하기
+  </h2>
+  <p class="section-subtitle">처음 시스템에 접속했을 때 가장 먼저 하는 일입니다.</p>
+
+  <div class="step">
+    <div class="step-number">1</div>
+    <div class="step-content">
+      <h4>시스템 주소로 접속</h4>
+      <p>회사에서 안내받은 주소로 접속합니다. 모바일 브라우저에서도 동작합니다.</p>
+      <div class="illustration">
+        <div class="illustration-label">화면 예시</div>
+        <svg viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:500px;display:block;margin:0 auto;">
+          <!-- Browser frame -->
+          <rect x="20" y="20" width="560" height="260" rx="12" fill="#fff" stroke="#e5e7eb" stroke-width="2"/>
+          <rect x="20" y="20" width="560" height="32" rx="12" fill="#f3f4f6"/>
+          <circle cx="40" cy="36" r="5" fill="#ef4444"/>
+          <circle cx="58" cy="36" r="5" fill="#eab308"/>
+          <circle cx="76" cy="36" r="5" fill="#22c55e"/>
+          <rect x="100" y="28" width="400" height="16" rx="8" fill="#fff" stroke="#e5e7eb"/>
+          <text x="120" y="40" font-size="11" fill="#6b7280">https://mss.kog.co.kr</text>
+
+          <!-- Login box -->
+          <rect x="180" y="90" width="240" height="170" rx="12" fill="#fff" stroke="#e5e7eb"/>
+          <rect x="240" y="105" width="120" height="28" rx="6" fill="#1a2744"/>
+          <text x="300" y="123" font-size="13" fill="#fff" text-anchor="middle" font-weight="700">KOG International</text>
+
+          <text x="300" y="155" font-size="10" fill="#6b7280" text-anchor="middle">이름을 입력하세요</text>
+          <rect x="200" y="162" width="200" height="28" rx="6" fill="#f9fafb" stroke="#e5e7eb"/>
+
+          <text x="300" y="210" font-size="10" fill="#6b7280" text-anchor="middle">비밀번호</text>
+          <rect x="200" y="217" width="200" height="28" rx="6" fill="#f9fafb" stroke="#e5e7eb"/>
+
+          <!-- Submit btn -->
+          <rect x="200" y="253" width="200" height="0" rx="6" fill="#1a2744"/>
+          <!-- (btn omitted for space) -->
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-number">2</div>
+    <div class="step-content">
+      <h4>이름과 비밀번호 입력</h4>
+      <p>관리자가 만들어준 <strong>이름</strong>과 <strong>비밀번호</strong>를 입력합니다. 초기 비밀번호는 보통 <code style="background:var(--gray-100);padding:2px 6px;border-radius:4px;font-weight:700;">0000</code> 입니다.</p>
+      <div class="tip-box tip-warning">
+        <span class="emoji">&#9888;</span>
+        <div class="content"><strong>처음 로그인하셨나요?</strong> 보안을 위해 비밀번호를 바로 변경해주세요. (사용자 메뉴에서 비밀번호 변경 가능)</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ 2. WORKLOG BASIC ═══════════════ -->
+<section id="worklog-basic">
+  <h2 class="section-title">
+    <span class="icon-box" style="background: var(--purple-light); color: var(--purple);">&#128221;</span>
+    2. 업무일지 작성하기
+  </h2>
+  <p class="section-subtitle">매일 아침 출근하면 가장 먼저 해야 할 중요한 일입니다.</p>
+
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="emoji">&#128338;</div>
+      <h5>정기업무</h5>
+      <p>매일/매주 반복되는 일상 업무</p>
+    </div>
+    <div class="feature-card">
+      <div class="emoji">&#128203;</div>
+      <h5>프로젝트</h5>
+      <p>특정 기간 동안 진행되는 프로젝트</p>
+    </div>
+    <div class="feature-card">
+      <div class="emoji">&#9889;</div>
+      <h5>돌발업무</h5>
+      <p>예기치 않게 발생한 긴급 업무</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-number">1</div>
+    <div class="step-content">
+      <h4>메뉴에서 "업무일지" 클릭</h4>
+      <p>왼쪽 사이드바의 <strong>"업무관리 &rarr; 업무일지"</strong>를 클릭하면 오늘 날짜의 일지 화면이 열립니다.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-number">2</div>
+    <div class="step-content">
+      <h4>"업무 등록" 버튼 누르기</h4>
+      <p>화면 오른쪽 위의 남색 버튼을 클릭하면 업무 입력 폼이 나타납니다.</p>
+      <div class="mock-ui">
+        <div class="mock-ui-header">
+          <span>&#128197;</span>
+          <span>오늘 (4월 16일 수요일)</span>
+          <span style="margin-left:auto;" class="mock-btn mock-btn-secondary">&#128203; 어제 복사</span>
+          <span class="mock-btn">+ 업무 등록</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-number">3</div>
+    <div class="step-content">
+      <h4>업무 유형 선택 후 제목·내용 입력</h4>
+      <p>정기업무 / 프로젝트 / 돌발업무 중 하나를 선택하고, 업무 제목과 상세 내용을 입력합니다.</p>
+      <div class="mock-ui">
+        <div style="display:flex;gap:6px;margin-bottom:12px;">
+          <span class="badge" style="background:#dbeafe;color:#1d4ed8;">&#128338; 정기업무</span>
+          <span class="badge" style="background:#f3f4f6;color:#6b7280;">&#128203; 프로젝트</span>
+          <span class="badge" style="background:#f3f4f6;color:#6b7280;">&#9889; 돌발업무</span>
+        </div>
+        <div class="mock-input" style="display:block;width:100%;margin-bottom:8px;">생산라인 일일 점검 및 불량 원인 분석</div>
+        <div class="mock-input" style="display:block;width:100%;height:56px;">1~3호 라인 점검 완료, 미세불량 2건 발견 및 즉시 시정 조치</div>
+        <div style="text-align:right;margin-top:10px;"><span class="mock-btn">+ 등록</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-number">4</div>
+    <div class="step-content">
+      <h4>업무 완료 시 동그라미 클릭해서 달성 처리</h4>
+      <p>업무가 끝나면 제목 왼쪽의 <strong>빈 동그라미</strong>를 클릭하세요. 체크 마크로 바뀌고 녹색으로 표시됩니다.</p>
+      <div class="mock-ui" style="display:flex;align-items:center;gap:12px;">
+        <span style="font-size:24px;color:#22c55e;">&check;</span>
+        <span style="text-decoration:line-through;color:#9ca3af;flex:1;">생산라인 일일 점검</span>
+        <span class="badge b-approve">달성</span>
+      </div>
+      <div class="tip-box tip-info">
+        <span class="emoji">&#128161;</span>
+        <div class="content"><strong>달성하지 못한 업무는?</strong> 동그라미 옆의 메시지 아이콘(&#128172;)을 눌러 <strong>미달성 사유</strong>를 기록해주세요.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ 3. WORKLOG EDIT ═══════════════ -->
+<section id="worklog-edit">
+  <h2 class="section-title">
+    <span class="icon-box" style="background: var(--teal-light); color: var(--teal);">&#9999;</span>
+    3. 업무 수정 · 복사하기
+  </h2>
+  <p class="section-subtitle">잘못 입력하거나, 어제와 비슷한 업무를 빠르게 등록할 수 있습니다.</p>
+
+  <div class="step">
+    <div class="step-number">1</div>
+    <div class="step-content">
+      <h4>업무 제목이나 내용 수정</h4>
+      <p>업무 항목 위에 마우스를 올리면 오른쪽에 <strong>연필 아이콘(&#9998;)</strong>이 나타납니다. 클릭하면 편집 모드로 바뀝니다.</p>
+      <div class="tip-box tip-success">
+        <span class="emoji">&#9989;</span>
+        <div class="content"><strong>유형도 바꿀 수 있어요!</strong> 정기업무로 잘못 등록했다면 프로젝트나 돌발업무로 바로 변경 가능합니다.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-number">2</div>
+    <div class="step-content">
+      <h4>어제 업무 복사하기 (시간 절약!)</h4>
+      <p>매일 비슷한 업무를 하신다면 <strong>"&#128203; 어제 복사"</strong> 버튼을 눌러 어제 업무를 오늘로 한 번에 가져올 수 있습니다.</p>
+      <div class="flow">
+        <div class="flow-node">
+          <div class="flow-emoji">&#128203;</div>
+          <div class="flow-label">어제 복사 클릭</div>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-node active">
+          <div class="flow-emoji">&#9989;</div>
+          <div class="flow-label">항목 체크</div>
+          <div class="flow-desc">원하는 것만 선택</div>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-node success">
+          <div class="flow-emoji">&#128228;</div>
+          <div class="flow-label">복사 완료</div>
+          <div class="flow-desc">오늘로 바로 등록</div>
+        </div>
+      </div>
+      <div class="tip-box tip-info">
+        <span class="emoji">&#128161;</span>
+        <div class="content">복사된 업무는 <strong>"미달성"</strong> 상태로 등록됩니다. 완료하면 동그라미를 클릭해 체크해주세요.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ 4. DEADLINE ═══════════════ -->
+<section id="deadline">
+  <h2 class="section-title">
+    <span class="icon-box" style="background: var(--orange-light); color: var(--orange);">&#9200;</span>
+    4. 아침 마감 시간 (08:30)
+  </h2>
+  <p class="section-subtitle">매일 아침 <strong>08:30까지</strong> 업무일지를 작성해주세요.</p>
+
+  <div class="flow">
+    <div class="flow-node">
+      <div class="flow-emoji">&#127774;</div>
+      <div class="flow-label">출근 ~ 08:00</div>
+      <div class="flow-desc">여유롭게 작성</div>
+    </div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-node warn">
+      <div class="flow-emoji">&#9201;</div>
+      <div class="flow-label">08:00 ~ 08:30</div>
+      <div class="flow-desc">마감 임박!</div>
+    </div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-node" style="border-color: var(--red); background: var(--red-light);">
+      <div class="flow-emoji">&#128276;</div>
+      <div class="flow-label">08:30 이후</div>
+      <div class="flow-desc">알림 발송</div>
+    </div>
+  </div>
+
+  <div class="tip-box tip-warning">
+    <span class="emoji">&#128227;</span>
+    <div class="content"><strong>마감 시간을 놓치면</strong> 자동으로 본인과 관리자에게 이메일 알림이 발송됩니다. 출근 후 가장 먼저 업무일지를 작성하는 습관을 들여주세요!</div>
+  </div>
+
+  <div class="tip-box tip-success">
+    <span class="emoji">&#128337;</span>
+    <div class="content"><strong>연차, 병가, 반차(오전)</strong> 사용 중인 날은 업무일지를 작성하지 않아도 됩니다. 시스템이 자동으로 인식합니다.</div>
+  </div>
+</section>
+
+<!-- ═══════════════ 5. ATTENDANCE ═══════════════ -->
+<section id="attendance">
+  <h2 class="section-title">
+    <span class="icon-box" style="background: var(--green-light); color: var(--green);">&#128197;</span>
+    5. 근태 신청하기
+  </h2>
+  <p class="section-subtitle">연차, 외근, 출장 등을 신청할 수 있습니다.</p>
+
+  <div class="feature-grid" style="grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));">
+    <div class="feature-card">
+      <div class="emoji">&#127774;</div>
+      <h5 style="color:#991b1b;">연차</h5>
+    </div>
+    <div class="feature-card">
+      <div class="emoji">&#9749;</div>
+      <h5 style="color:#9a3412;">반차</h5>
+    </div>
+    <div class="feature-card">
+      <div class="emoji">&#128205;</div>
+      <h5 style="color:#1e40af;">외근</h5>
+    </div>
+    <div class="feature-card">
+      <div class="emoji">&#9992;</div>
+      <h5 style="color:#6b21a8;">출장</h5>
+    </div>
+    <div class="feature-card">
+      <div class="emoji">&#127969;</div>
+      <h5 style="color:#115e59;">재택</h5>
+    </div>
+    <div class="feature-card">
+      <div class="emoji">&#129656;</div>
+      <h5 style="color:#9f1239;">병가</h5>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-number">1</div>
+    <div class="step-content">
+      <h4>"인사관리 &rarr; 근태 관리" 메뉴 이동</h4>
+      <p>왼쪽 사이드바에서 메뉴를 찾아 클릭합니다. 월간 캘린더 화면이 나타납니다.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-number">2</div>
+    <div class="step-content">
+      <h4>"+ 근태 신청" 버튼 클릭</h4>
+      <p>오른쪽 위 남색 버튼을 누릅니다. 신청 폼 창이 열립니다.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-number">3</div>
+    <div class="step-content">
+      <h4>날짜와 유형 선택</h4>
+      <p>날짜를 고르고, 연차·반차·외근 등 8가지 유형 중 선택합니다.</p>
+      <div class="mock-ui">
+        <div style="margin-bottom:10px;">
+          <label style="font-size:12px;color:#6b7280;font-weight:600;">&#9744; 연속 등록 (다일)</label>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:12px;">
+          <div class="mock-input" style="flex:1;">2026-04-20</div>
+          <div class="mock-input" style="flex:1;">2026-04-22</div>
+        </div>
+        <div style="background:#dbeafe;color:#1d4ed8;padding:8px 12px;border-radius:8px;font-size:12px;font-weight:600;margin-bottom:12px;">
+          &#128197; 평일 3일 (공휴일/주말 제외)
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;">
+          <div style="background:#fee2e2;color:#991b1b;padding:8px;border-radius:6px;text-align:center;font-size:11px;font-weight:700;">&#127774; 연차</div>
+          <div style="background:#f3f4f6;color:#9ca3af;padding:8px;border-radius:6px;text-align:center;font-size:11px;">반차AM</div>
+          <div style="background:#f3f4f6;color:#9ca3af;padding:8px;border-radius:6px;text-align:center;font-size:11px;">반차PM</div>
+          <div style="background:#f3f4f6;color:#9ca3af;padding:8px;border-radius:6px;text-align:center;font-size:11px;">외근</div>
+        </div>
+        <div style="background:#dcfce7;color:#166534;padding:8px 12px;border-radius:8px;font-size:12px;font-weight:600;margin-top:10px;">
+          &#128200; 연차 잔여: 12일 / 15일 (사용 3일)
+        </div>
+      </div>
+      <div class="tip-box tip-success">
+        <span class="emoji">&#9989;</span>
+        <div class="content"><strong>연속된 날은 한 번에 신청!</strong> "연속 등록" 체크박스를 켜고 시작일·종료일을 선택하면 주말·공휴일을 제외한 평일만 자동으로 등록됩니다.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-number">4</div>
+    <div class="step-content">
+      <h4>사유 입력 후 "신청" 버튼</h4>
+      <p>비고란에 사유를 간단히 작성하고 신청합니다. 이제 <strong>관리자 승인</strong>을 기다리면 됩니다.</p>
+      <div class="tip-box tip-info">
+        <span class="emoji">&#128172;</span>
+        <div class="content"><strong>관리자가 직접 등록하는 경우</strong>는 별도 승인 없이 바로 반영됩니다.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ 6. APPROVAL ═══════════════ -->
+<section id="approval">
+  <h2 class="section-title">
+    <span class="icon-box" style="background: var(--yellow-light); color: var(--yellow);">&#9989;</span>
+    6. 승인 절차
+  </h2>
+  <p class="section-subtitle">근태 신청이 어떻게 처리되는지 알아봅니다.</p>
+
+  <div class="flow">
+    <div class="flow-node active">
+      <div class="flow-emoji">&#128100;</div>
+      <div class="flow-label">직원 신청</div>
+      <div class="flow-desc">대기 상태</div>
+    </div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-node warn">
+      <div class="flow-emoji">&#128372;</div>
+      <div class="flow-label">관리자 확인</div>
+      <div class="flow-desc">검토 중</div>
+    </div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-node success">
+      <div class="flow-emoji">&#9989;</div>
+      <div class="flow-label">승인</div>
+      <div class="flow-desc">캘린더 반영</div>
+    </div>
+  </div>
+
+  <div class="tip-box tip-info">
+    <span class="emoji">&#128269;</span>
+    <div class="content">
+      <strong>캘린더에서 상태 확인하는 법</strong>
+      <ul style="margin-top:8px;padding-left:20px;">
+        <li><span class="badge b-wait">&#9201; 대기</span> — 주황색 <strong>점선 테두리</strong>로 표시</li>
+        <li><span class="badge b-approve">&#9989; 승인</span> — 일반 색상으로 표시</li>
+        <li><span class="badge b-reject">&#10060; 반려</span> — 빨간 표시 + 반려 사유 함께 노출</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="mock-ui">
+    <div class="mock-ui-header">
+      <span>&#128197;</span>
+      <span>4월 20일 (월) 상세</span>
+    </div>
+    <div style="background:#fef3c7;padding:12px;border-radius:8px;margin-bottom:8px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+        <span style="font-weight:700;">김영희</span>
+        <span class="badge" style="background:#fee2e2;color:#991b1b;">&#127774; 연차</span>
+        <span class="badge b-wait">&#9201; 대기</span>
+      </div>
+      <div style="font-size:12px;color:#6b7280;margin-bottom:8px;">사유: 개인 사정</div>
+      <div style="font-size:11px;color:#92400e;">&darr; 관리자가 보는 화면에서는 아래 버튼이 표시됩니다</div>
+      <div style="display:flex;gap:6px;margin-top:6px;">
+        <span class="mock-btn mock-btn-green" style="flex:1;justify-content:center;">&check; 승인</span>
+        <span class="mock-btn mock-btn-red" style="flex:1;justify-content:center;">&times; 반려</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="tip-box tip-warning">
+    <span class="emoji">&#128276;</span>
+    <div class="content"><strong>반려된 경우</strong>는 반려 사유를 확인하고, 수정하여 다시 신청할 수 있습니다.</div>
+  </div>
+</section>
+
+<!-- ═══════════════ 7. LEAVE ═══════════════ -->
+<section id="leave">
+  <h2 class="section-title">
+    <span class="icon-box" style="background: var(--red-light); color: var(--red);">&#127774;</span>
+    7. 연차 잔여일수 확인
+  </h2>
+  <p class="section-subtitle">내 연차가 몇 일 남았는지 언제든 확인할 수 있습니다.</p>
+
+  <div class="step">
+    <div class="step-number">1</div>
+    <div class="step-content">
+      <h4>근태 관리 페이지 오른쪽 하단 확인</h4>
+      <p><strong>"직원별 이번 달 현황"</strong> 카드에서 본인 이름 옆의 <strong>파란색 뱃지</strong>에 연차 사용량이 표시됩니다.</p>
+      <div class="mock-ui">
+        <div style="display:flex;align-items:center;gap:8px;padding:8px 0;">
+          <div style="width:24px;height:24px;border-radius:50%;background:#e5e7eb;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;">김</div>
+          <span style="font-weight:600;font-size:13px;">김영희</span>
+          <span class="badge" style="background:#fee2e2;color:#991b1b;">연차</span>
+          <span class="badge" style="background:#dbeafe;color:#1d4ed8;font-weight:700;margin-left:auto;">연차 3/15</span>
+        </div>
+      </div>
+      <div class="tip-box tip-danger">
+        <span class="emoji">&#9940;</span>
+        <div class="content"><strong>연차를 초과하려고 하면</strong> 시스템이 경고를 보냅니다. 초과 등록 시에는 관리자와 먼저 상의해주세요.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ 8. REPORT ═══════════════ -->
+<section id="report">
+  <h2 class="section-title">
+    <span class="icon-box" style="background: var(--blue-light); color: var(--blue);">&#128202;</span>
+    8. 업무 리포트 보기
+  </h2>
+  <p class="section-subtitle">당일·주간·월간 업무 현황을 한눈에 파악할 수 있습니다.</p>
+
+  <div class="step">
+    <div class="step-number">1</div>
+    <div class="step-content">
+      <h4>업무일지 화면에서 "&#128202; 보고서" 버튼 클릭</h4>
+      <p>또는 왼쪽 사이드바의 <strong>"업무 리포트"</strong>를 바로 클릭해도 됩니다.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-number">2</div>
+    <div class="step-content">
+      <h4>당일 / 주간 / 월간 탭 선택</h4>
+      <p>원하는 기간을 선택하면 해당 기간의 업무 현황이 표시됩니다.</p>
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="emoji">&#128197;</div>
+          <h5>당일</h5>
+          <p>오늘 하루 업무</p>
+        </div>
+        <div class="feature-card">
+          <div class="emoji">&#128205;</div>
+          <h5>주간</h5>
+          <p>월~일 일주일 업무</p>
+        </div>
+        <div class="feature-card">
+          <div class="emoji">&#128466;</div>
+          <h5>월간</h5>
+          <p>한 달 전체 업무</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-number">3</div>
+    <div class="step-content">
+      <h4>"&#128424; 인쇄/PDF" 버튼으로 저장</h4>
+      <p>상사 보고용으로 인쇄하거나 PDF로 저장할 수 있습니다. 자동으로 결재란이 포함됩니다.</p>
+      <div class="tip-box tip-success">
+        <span class="emoji">&#128203;</span>
+        <div class="content"><strong>부서별 필터</strong>를 사용하면 특정 부서만 선택해서 보고서를 만들 수 있습니다. 관리자에게 유용합니다!</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ 9. FAQ ═══════════════ -->
+<section id="faq">
+  <h2 class="section-title">
+    <span class="icon-box" style="background: var(--pink-light); color: var(--pink);">&#10067;</span>
+    9. 자주 묻는 질문
+  </h2>
+  <p class="section-subtitle">사용하면서 가장 많이 궁금해하는 것들을 모았습니다.</p>
+
+  <div class="faq-item">
+    <div class="faq-q"><span class="mark">Q.</span>업무일지를 어제 안 썼어요. 지금 쓸 수 있나요?</div>
+    <div class="faq-a">직원 계정으로는 <strong>지난 날짜의 업무일지를 수정할 수 없습니다</strong>. 관리자에게 요청하면 소급 등록이 가능합니다.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q"><span class="mark">Q.</span>연차 신청을 취소하고 싶어요.</div>
+    <div class="faq-a"><strong>대기 상태</strong>라면 관리자에게 말씀드려 삭제 요청하시거나, 캘린더의 해당 근태를 열어 삭제하실 수 있습니다. <strong>이미 승인된 근태</strong>는 관리자만 삭제할 수 있습니다.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q"><span class="mark">Q.</span>비밀번호를 잊어버렸어요.</div>
+    <div class="faq-a">관리자에게 요청하면 비밀번호를 초기화해줍니다. 초기화된 비밀번호로 로그인한 후, 반드시 본인만 아는 비밀번호로 다시 변경해주세요.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q"><span class="mark">Q.</span>출장이나 외근 중인데 업무일지를 써야 하나요?</div>
+    <div class="faq-a"><strong>네, 작성해야 합니다.</strong> 출장/외근/재택은 근태는 기록하지만 업무는 계속 수행하는 것이므로 업무일지도 함께 작성합니다.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q"><span class="mark">Q.</span>공휴일이나 주말에도 업무일지를 써야 하나요?</div>
+    <div class="faq-a"><strong>쓰지 않아도 됩니다.</strong> 시스템이 공휴일·주말을 자동으로 인식합니다. 다만 <strong>특근이 있는 경우</strong>는 관리자가 "특근 처리"를 해주면 해당 날짜의 업무일지를 작성할 수 있습니다.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q"><span class="mark">Q.</span>모바일에서도 사용할 수 있나요?</div>
+    <div class="faq-a"><strong>네, 가능합니다.</strong> 스마트폰 브라우저에서 동일한 주소로 접속하면 모바일에 최적화된 화면이 나타납니다.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q"><span class="mark">Q.</span>업무 유형을 잘못 선택했어요.</div>
+    <div class="faq-a">업무 항목 위에 마우스를 올리고 <strong>&#9998; 연필 아이콘</strong>을 클릭하면 유형, 제목, 설명을 모두 수정할 수 있습니다.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q"><span class="mark">Q.</span>매일 비슷한 업무라서 매번 입력하기 번거로워요.</div>
+    <div class="faq-a"><strong>"&#128203; 어제 복사" 기능을 활용하세요!</strong> 어제 등록한 업무를 클릭 몇 번으로 오늘로 가져올 수 있습니다.</div>
+  </div>
+</section>
+
+<!-- ═══════════════ FINAL TIPS ═══════════════ -->
+<section style="background: linear-gradient(135deg, var(--navy) 0%, #2d3d5c 100%); color: #fff;">
+  <h2 class="section-title" style="color: #fff;">
+    <span class="icon-box" style="background: rgba(255,255,255,0.15); color: #fff;">&#127775;</span>
+    하루 일과 체크리스트
+  </h2>
+  <p style="color: rgba(255,255,255,0.7); margin-bottom:24px;">매일 이 순서대로 하시면 됩니다!</p>
+
+  <div style="display:flex;flex-direction:column;gap:12px;">
+    <div style="display:flex;align-items:center;gap:16px;background:rgba(255,255,255,0.1);padding:16px 20px;border-radius:12px;">
+      <div style="width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;">1</div>
+      <div>
+        <div style="font-weight:700;font-size:16px;">&#127772; 출근 직후 (08:00 전후)</div>
+        <div style="font-size:13px;opacity:0.8;">업무일지 작성 &rarr; 오늘 할 일 3~5개 등록</div>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:16px;background:rgba(255,255,255,0.1);padding:16px 20px;border-radius:12px;">
+      <div style="width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;">2</div>
+      <div>
+        <div style="font-weight:700;font-size:16px;">&#9200; 근무 중</div>
+        <div style="font-size:13px;opacity:0.8;">업무 완료 시마다 동그라미 &rarr; 체크 마크로 변경</div>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:16px;background:rgba(255,255,255,0.1);padding:16px 20px;border-radius:12px;">
+      <div style="width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;">3</div>
+      <div>
+        <div style="font-weight:700;font-size:16px;">&#127774; 돌발업무 발생 시</div>
+        <div style="font-size:13px;opacity:0.8;">"돌발업무" 유형으로 즉시 추가 등록</div>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:16px;background:rgba(255,255,255,0.1);padding:16px 20px;border-radius:12px;">
+      <div style="width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;">4</div>
+      <div>
+        <div style="font-weight:700;font-size:16px;">&#127770; 퇴근 전</div>
+        <div style="font-size:13px;opacity:0.8;">미달성 업무가 있다면 사유 기록, 내일 연차 있으면 미리 신청</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<footer>
+  <p>&#127970; KOG International 경영관리 시스템 사용 안내</p>
+  <p style="margin-top:6px;">문의사항은 관리부로 연락주세요</p>
+</footer>
+
+</body>
+</html>
