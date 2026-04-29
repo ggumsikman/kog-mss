@@ -119,58 +119,64 @@ export default async function DashboardPage() {
     todayLogs = SAMPLE_WORK_LOGS.filter((l: any) => l.log_date === '2026-04-05')
     monthAttendance = SAMPLE_ATTENDANCE
   } else {
-    // 1. 지연 프로젝트
-    const { data: delayedProjects } = await supabase
-      .from('projects')
-      .select('*, departments(name), users(name)')
-      .lt('due_date', today)
-      .neq('status', '완료')
-      .order('due_date', { ascending: true })
-
-    // 2. 이달 임박 정기검사 (D-30 이내)
     const d30 = new Date(); d30.setDate(d30.getDate() + 30)
-    const { data: urgentInspections } = await supabase
-      .from('inspections')
-      .select('*, departments(name)')
-      .lte('next_due_date', d30.toISOString().split('T')[0])
-      .neq('status', '정상')
-      .order('next_due_date', { ascending: true })
-
-    // 3. 이달 교육 예정
+    const d30Str = d30.toISOString().split('T')[0]
     const monthStart = today.slice(0, 7) + '-01'
     const monthEnd   = today.slice(0, 7) + '-31'
-    const { data: educationsData } = await supabase
-      .from('education_schedules')
-      .select('*')
-      .gte('scheduled_date', monthStart)
-      .lte('scheduled_date', monthEnd)
-      .eq('status', '예정')
 
-    // 4. 미처리 공문서
-    const { data: pendingDocs } = await supabase
-      .from('official_documents')
-      .select('*, users!received_by(name), departments(name)')
-      .in('status', ['접수', '처리중'])
-      .order('received_date', { ascending: true })
-
-    // 5. 전체 알림
-    const { data: notifications } = await supabase
-      .from('notifications')
-      .select('*')
-      .eq('is_read', false)
-      .order('created_at', { ascending: false })
-      .limit(10)
-
-    // 6. 부서별 업무달성률 (이달)
-    const { data: workLogs } = await supabase
-      .from('work_logs')
-      .select('achieved, users(department_id, departments(name))')
-      .gte('log_date', monthStart)
-      .lte('log_date', monthEnd)
+    // ⚡ 모든 쿼리를 병렬로 실행 (8개 → 한 번에)
+    const [
+      delayedRes,
+      inspectionsRes,
+      educationsRes,
+      docsRes,
+      notifsRes,
+      workLogsRes,
+      todayLogsRes,
+      monthAttRes,
+    ] = await Promise.all([
+      supabase.from('projects')
+        .select('*, departments(name), users(name)')
+        .lt('due_date', today)
+        .neq('status', '완료')
+        .order('due_date', { ascending: true }),
+      supabase.from('inspections')
+        .select('*, departments(name)')
+        .lte('next_due_date', d30Str)
+        .neq('status', '정상')
+        .order('next_due_date', { ascending: true }),
+      supabase.from('education_schedules')
+        .select('*')
+        .gte('scheduled_date', monthStart)
+        .lte('scheduled_date', monthEnd)
+        .eq('status', '예정'),
+      supabase.from('official_documents')
+        .select('*, users!received_by(name), departments(name)')
+        .in('status', ['접수', '처리중'])
+        .order('received_date', { ascending: true }),
+      supabase.from('notifications')
+        .select('*')
+        .eq('is_read', false)
+        .order('created_at', { ascending: false })
+        .limit(10),
+      supabase.from('work_logs')
+        .select('achieved, users(department_id, departments(name))')
+        .gte('log_date', monthStart)
+        .lte('log_date', monthEnd),
+      supabase.from('work_logs')
+        .select('*, users(name, position, departments(name))')
+        .eq('log_date', today)
+        .order('created_at', { ascending: true }),
+      supabase.from('attendance_records')
+        .select('*, users(name, position)')
+        .gte('date', monthStart)
+        .lte('date', monthEnd)
+        .order('date', { ascending: true }),
+    ])
 
     // 부서별 달성률 계산
     deptStats = {}
-    workLogs?.forEach((log: any) => {
+    workLogsRes.data?.forEach((log: any) => {
       const deptId = log.users?.department_id
       const deptName = log.users?.departments?.name || '미분류'
       if (!deptId) return
@@ -179,28 +185,13 @@ export default async function DashboardPage() {
       if (log.achieved) deptStats[deptId].done++
     })
 
-    // 7. 오늘 업무일지
-    const { data: todayLogsData } = await supabase
-      .from('work_logs')
-      .select('*, users(name, position, departments(name))')
-      .eq('log_date', today)
-      .order('created_at', { ascending: true })
-
-    // 8. 이달 근태 기록
-    const { data: monthAtt } = await supabase
-      .from('attendance_records')
-      .select('*, users(name, position)')
-      .gte('date', monthStart)
-      .lte('date', monthEnd)
-      .order('date', { ascending: true })
-
-    delayed = delayedProjects || []
-    inspections = urgentInspections || []
-    docs = pendingDocs || []
-    notifs = notifications || []
-    educations = educationsData || []
-    todayLogs = todayLogsData || []
-    monthAttendance = monthAtt || []
+    delayed         = delayedRes.data ?? []
+    inspections     = inspectionsRes.data ?? []
+    educations      = educationsRes.data ?? []
+    docs            = docsRes.data ?? []
+    notifs          = notifsRes.data ?? []
+    todayLogs       = todayLogsRes.data ?? []
+    monthAttendance = monthAttRes.data ?? []
   }
 
   // 캘린더 계산 (현재 또는 샘플 기준 월)

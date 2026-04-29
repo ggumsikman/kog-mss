@@ -1,7 +1,12 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { createServerClient } from '@supabase/ssr'
 
+/**
+ * 미들웨어: 네트워크 호출 없이 인증 쿠키 존재 여부만 체크 (빠름)
+ *
+ * Supabase auth.getUser()를 호출하면 매 요청마다 200~500ms 네트워크 비용 발생.
+ * 미들웨어는 가볍게 통과 검사만, 정밀 검증은 페이지의 getCurrentUser()에서 처리.
+ */
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
@@ -14,39 +19,22 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // 샘플 모드는 그대로 유지
-  const isDemoMode = request.cookies.get('kog_demo')?.value === '1'
-  if (isDemoMode) return NextResponse.next()
+  // 샘플 모드는 그대로 통과
+  if (request.cookies.get('kog_demo')?.value === '1') {
+    return NextResponse.next()
+  }
 
-  // Supabase 세션 확인 (쿠키 자동 갱신 지원)
-  let response = NextResponse.next({ request })
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
-          response = NextResponse.next({ request })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options),
-          )
-        },
-      },
-    },
+  // Supabase 인증 쿠키 존재 확인 (네트워크 호출 없음)
+  const hasSupabaseAuth = request.cookies.getAll().some(
+    (c) => c.name.startsWith('sb-') && c.name.endsWith('-auth-token'),
   )
 
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
+  if (!hasSupabaseAuth) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  return response
+  // 쿠키가 있으면 통과 — 토큰 만료/스푸핑 등은 페이지의 getCurrentUser()에서 처리
+  return NextResponse.next()
 }
 
 export const config = {
