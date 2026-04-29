@@ -2,8 +2,10 @@ import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser } from '@/lib/auth/getUser'
 import { calcDelayDays, calcDaysUntil, formatDate, getStatusColor } from '@/lib/utils'
 import { Project, Inspection, HrEvent, AnnualSchedule } from '@/types'
+import Link from 'next/link'
 import {
-  AlertTriangle, Bell, ChevronRight, ShieldCheck, FileWarning
+  AlertTriangle, Bell, ChevronRight, ShieldCheck, FileWarning,
+  CheckCircle2, Circle, Briefcase, Clock, Zap, CalendarCheck,
 } from 'lucide-react'
 import {
   SAMPLE_DELAYED_PROJECTS,
@@ -11,7 +13,28 @@ import {
   SAMPLE_PENDING_DOCS,
   SAMPLE_THIS_MONTH_EDUCATIONS,
   SAMPLE_DEPT_STATS,
+  SAMPLE_WORK_LOGS,
+  SAMPLE_ATTENDANCE,
 } from '@/lib/sample-data'
+
+const LOG_TYPE_META: Record<string, { color: string; icon: React.ReactNode }> = {
+  '정기업무': { color: 'bg-blue-100 text-blue-700',    icon: <Briefcase size={10} /> },
+  '프로젝트': { color: 'bg-purple-100 text-purple-700', icon: <Clock size={10} /> },
+  '돌발업무': { color: 'bg-orange-100 text-orange-700', icon: <Zap size={10} /> },
+}
+
+const ATT_TYPE_DOT: Record<string, string> = {
+  '연차': 'bg-red-500',
+  '반차오전': 'bg-orange-500',
+  '반차오후': 'bg-orange-500',
+  '외근': 'bg-blue-500',
+  '출장': 'bg-purple-500',
+  '재택': 'bg-teal-500',
+  '병가': 'bg-pink-500',
+  '기타': 'bg-gray-400',
+}
+
+const WEEKDAYS_KO = ['일', '월', '화', '수', '목', '금', '토']
 
 // ── 헬퍼 컴포넌트 ──────────────────────────────────────
 
@@ -83,6 +106,8 @@ export default async function DashboardPage() {
   let notifs: any[]
   let deptStats: Record<string, { name: string; total: number; done: number }>
   let educations: any[]
+  let todayLogs: any[]
+  let monthAttendance: any[]
 
   if (isSample) {
     delayed = SAMPLE_DELAYED_PROJECTS
@@ -91,6 +116,8 @@ export default async function DashboardPage() {
     notifs = []
     deptStats = SAMPLE_DEPT_STATS
     educations = SAMPLE_THIS_MONTH_EDUCATIONS
+    todayLogs = SAMPLE_WORK_LOGS.filter((l: any) => l.log_date === '2026-04-05')
+    monthAttendance = SAMPLE_ATTENDANCE
   } else {
     // 1. 지연 프로젝트
     const { data: delayedProjects } = await supabase
@@ -152,12 +179,53 @@ export default async function DashboardPage() {
       if (log.achieved) deptStats[deptId].done++
     })
 
+    // 7. 오늘 업무일지
+    const { data: todayLogsData } = await supabase
+      .from('work_logs')
+      .select('*, users(name, position, departments(name))')
+      .eq('log_date', today)
+      .order('created_at', { ascending: true })
+
+    // 8. 이달 근태 기록
+    const { data: monthAtt } = await supabase
+      .from('attendance_records')
+      .select('*, users(name, position)')
+      .gte('date', monthStart)
+      .lte('date', monthEnd)
+      .order('date', { ascending: true })
+
     delayed = delayedProjects || []
     inspections = urgentInspections || []
     docs = pendingDocs || []
     notifs = notifications || []
     educations = educationsData || []
+    todayLogs = todayLogsData || []
+    monthAttendance = monthAtt || []
   }
+
+  // 캘린더 계산 (현재 또는 샘플 기준 월)
+  const calBase = isSample ? new Date('2026-04-05T00:00:00') : new Date()
+  const calYear = calBase.getFullYear()
+  const calMonth = calBase.getMonth()
+  const calToday = isSample ? '2026-04-05' : today
+  const firstDow = new Date(calYear, calMonth, 1).getDay()
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate()
+  const calCells: (number | null)[] = []
+  for (let i = 0; i < firstDow; i++) calCells.push(null)
+  for (let d = 1; d <= daysInMonth; d++) calCells.push(d)
+
+  // 날짜별 근태 매핑
+  const attByDay: Record<number, any[]> = {}
+  monthAttendance.forEach((a: any) => {
+    const day = parseInt(a.date.split('-')[2], 10)
+    if (!attByDay[day]) attByDay[day] = []
+    attByDay[day].push(a)
+  })
+
+  // 오늘 업무 통계
+  const totalLogs = todayLogs.length
+  const doneLogs = todayLogs.filter((l: any) => l.achieved).length
+  const todayPct = totalLogs > 0 ? Math.round(doneLogs / totalLogs * 100) : 0
 
   return (
     <div className="p-4 lg:p-6 max-w-7xl mx-auto">
@@ -179,6 +247,131 @@ export default async function DashboardPage() {
         <KpiCard label="🟡 이달 검사 임박" value={inspections.length} sub="D-30 이내" color="yellow" />
         <KpiCard label="📚 이달 교육 예정" value={educations.length} sub={`${today.slice(0,7)} 기준`} color="blue" />
         <KpiCard label="📄 미처리 공문서" value={docs.length} sub="접수·처리중" color={docs.length > 0 ? 'yellow' : 'green'} />
+      </div>
+
+      {/* 오늘 업무일지 + 이달 근태 달력 */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
+
+        {/* 오늘 업무일지 */}
+        <SectionCard title={`📝 오늘 업무일지 (${calToday.slice(5).replace('-','/')})`} href={`/worklogs?date=${calToday}`}>
+          <div className="px-5 py-3">
+            {totalLogs > 0 ? (
+              <>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs text-gray-500">전체 {totalLogs}건</span>
+                  <span className={`text-sm font-bold ${todayPct >= 80 ? 'text-green-600' : todayPct >= 60 ? 'text-yellow-600' : 'text-red-600'}`}>
+                    달성 {doneLogs}/{totalLogs} ({todayPct}%)
+                  </span>
+                </div>
+                <div className="w-full bg-gray-100 rounded-full h-1.5 mb-3">
+                  <div
+                    className={`h-1.5 rounded-full ${todayPct >= 80 ? 'bg-green-500' : todayPct >= 60 ? 'bg-yellow-400' : 'bg-red-400'}`}
+                    style={{ width: `${todayPct}%` }}
+                  />
+                </div>
+                <div className="space-y-1.5 max-h-64 overflow-y-auto">
+                  {todayLogs.slice(0, 6).map((log: any) => {
+                    const meta = LOG_TYPE_META[log.log_type] ?? LOG_TYPE_META['정기업무']
+                    return (
+                      <div key={log.id} className="flex items-start gap-2 py-1">
+                        <span className="mt-0.5 flex-shrink-0">
+                          {log.achieved
+                            ? <CheckCircle2 size={14} className="text-green-500" />
+                            : <Circle size={14} className="text-gray-300" />}
+                        </span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className={`inline-flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded ${meta.color}`}>
+                              {meta.icon}{log.log_type}
+                            </span>
+                            <span className="text-[10px] text-gray-400">{log.users?.name}</span>
+                          </div>
+                          <p className={`text-xs mt-0.5 truncate ${log.achieved ? 'text-gray-400 line-through' : 'text-gray-700'}`}>
+                            {log.title}
+                          </p>
+                        </div>
+                      </div>
+                    )
+                  })}
+                  {todayLogs.length > 6 && (
+                    <p className="text-center text-[11px] text-gray-400 pt-1">
+                      외 {todayLogs.length - 6}건 더 보기 →
+                    </p>
+                  )}
+                </div>
+              </>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-gray-400 text-sm mb-2">오늘 등록된 업무가 없습니다</p>
+                <Link href="/worklogs" className="text-xs text-blue-500 hover:underline">+ 업무 등록하기</Link>
+              </div>
+            )}
+          </div>
+        </SectionCard>
+
+        {/* 이달 근태 달력 */}
+        <SectionCard title={`📅 ${calYear}년 ${calMonth + 1}월 근태`} href="/hr/attendance">
+          <div className="px-5 py-3">
+            {/* 요일 헤더 */}
+            <div className="grid grid-cols-7 mb-1">
+              {WEEKDAYS_KO.map((d, i) => (
+                <div key={d} className={`text-center text-[10px] font-semibold py-1 ${
+                  i === 0 ? 'text-red-400' : i === 6 ? 'text-blue-400' : 'text-gray-400'
+                }`}>{d}</div>
+              ))}
+            </div>
+            {/* 날짜 그리드 */}
+            <div className="grid grid-cols-7 gap-px">
+              {calCells.map((day, idx) => {
+                if (day === null) return <div key={`empty-${idx}`} className="h-10" />
+                const dateStr = `${calYear}-${String(calMonth + 1).padStart(2,'0')}-${String(day).padStart(2,'0')}`
+                const isToday = dateStr === calToday
+                const dow = new Date(calYear, calMonth, day).getDay()
+                const records = attByDay[day] ?? []
+                return (
+                  <Link
+                    key={day}
+                    href={`/hr/attendance`}
+                    className={`h-10 rounded-md flex flex-col items-center justify-center relative transition-colors ${
+                      isToday ? 'bg-emerald-100 border border-emerald-300' : 'hover:bg-gray-50'
+                    }`}
+                  >
+                    <span className={`text-xs font-semibold ${
+                      isToday ? 'text-emerald-700' :
+                      dow === 0 ? 'text-red-400' :
+                      dow === 6 ? 'text-blue-400' : 'text-gray-700'
+                    }`}>{day}</span>
+                    {/* 근태 점 표시 (최대 3개) */}
+                    {records.length > 0 && (
+                      <div className="flex gap-0.5 mt-0.5">
+                        {records.slice(0, 3).map((r: any, i: number) => (
+                          <span
+                            key={i}
+                            className={`w-1 h-1 rounded-full ${ATT_TYPE_DOT[r.type] ?? 'bg-gray-300'}`}
+                            title={`${r.users?.name ?? ''} ${r.type}`}
+                          />
+                        ))}
+                        {records.length > 3 && (
+                          <span className="text-[8px] text-gray-400 leading-none">+{records.length - 3}</span>
+                        )}
+                      </div>
+                    )}
+                  </Link>
+                )
+              })}
+            </div>
+            {/* 범례 */}
+            <div className="flex flex-wrap gap-x-3 gap-y-1 mt-3 pt-2 border-t border-gray-100 text-[10px] text-gray-500">
+              <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-red-500" />연차</span>
+              <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-orange-500" />반차</span>
+              <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-blue-500" />외근</span>
+              <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-purple-500" />출장</span>
+              <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-teal-500" />재택</span>
+              <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-pink-500" />병가</span>
+            </div>
+            <p className="text-[10px] text-gray-400 mt-2">이달 근태 총 {monthAttendance.length}건</p>
+          </div>
+        </SectionCard>
       </div>
 
       {/* 메인 2컬럼 */}
