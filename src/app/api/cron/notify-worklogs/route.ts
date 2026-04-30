@@ -6,8 +6,9 @@
  *   CRON_SECRET           — Vercel이 자동 생성 (대시보드에서 확인)
  *   NOTIFY_START_DATE     — 알림 발송 시작일 (YYYY-MM-DD, 미설정 시 기본값: 2026-05-06)
  *                           이 날짜 이전에는 cron이 동작해도 메일이 나가지 않음
- *   RESEND_API_KEY        — 이메일 발송 (https://resend.com)
- *   NOTIFY_FROM_EMAIL     — 발신 이메일 주소 (예: noreply@kogintl.com)
+ *   GMAIL_USER            — 발신 Gmail 주소 (예: kog.mss.notify@gmail.com)
+ *   GMAIL_APP_PASSWORD    — Gmail 앱 비밀번호 (16자리)
+ *                           발급: https://myaccount.google.com/apppasswords (2단계 인증 필수)
  *   NEXT_PUBLIC_APP_URL   — 시스템 URL (예: https://kog-mss.vercel.app)
  *   SMS_API_KEY           — SMS 발송 API 키 (NHN Cloud / Aligo 등) — 미구현
  *   KAKAO_API_KEY         — 카카오 알림톡 API 키 (NHN Cloud BizMessage) — 미구현
@@ -16,6 +17,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { checkRestDay } from '@/lib/holidays'
+import nodemailer from 'nodemailer'
 
 // 기본 발송 시작일 — 환경변수로 덮어쓰기 가능
 const DEFAULT_NOTIFY_START_DATE = '2026-05-06'
@@ -120,28 +122,37 @@ async function sendAllChannels(user: any, date: string) {
   return { user: `${user.name} ${user.position}`, email, sms, kakao }
 }
 
-// ── 이메일 (Resend) ─────────────────────────────────────
+// ── 이메일 (Gmail SMTP via nodemailer) ──────────────────
+let _transporter: nodemailer.Transporter | null = null
+function getTransporter(): nodemailer.Transporter | null {
+  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) return null
+  if (!_transporter) {
+    _transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_APP_PASSWORD,
+      },
+    })
+  }
+  return _transporter
+}
+
 async function sendEmail(user: any, date: string): Promise<string> {
-  if (!process.env.RESEND_API_KEY) return '⚠ RESEND_API_KEY 미설정'
+  const transporter = getTransporter()
+  if (!transporter) return '⚠ GMAIL_USER / GMAIL_APP_PASSWORD 미설정'
   if (!user.email) return '⚠ 이메일 없음'
 
   try {
-    const res = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: process.env.NOTIFY_FROM_EMAIL ?? 'KOG MSS <noreply@kog-mss.com>',
-        to: [user.email],
-        subject: `[KOG MSS] ${date} 업무일지를 작성해 주세요`,
-        html: buildEmailHtml(user, date),
-      }),
+    const info = await transporter.sendMail({
+      from: `"KOG MSS" <${process.env.GMAIL_USER}>`,
+      to: user.email,
+      subject: `[KOG MSS] ${date} 업무일지 미작성 알림`,
+      html: buildEmailHtml(user, date),
     })
-    return res.ok ? '✓ 발송 완료' : `✗ 실패 (HTTP ${res.status})`
-  } catch (e) {
-    return `✗ 오류: ${e}`
+    return info.accepted.length > 0 ? '✓ 발송 완료' : '✗ 발송 거부'
+  } catch (e: any) {
+    return `✗ 오류: ${e?.message ?? e}`
   }
 }
 
