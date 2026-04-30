@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/cron/notify-worklogs",
-      "schedule": "0 23 * * 0,1,2,3,4"
+      "schedule": "30 23 * * 0,1,2,3,4"
     }
   ]
 }

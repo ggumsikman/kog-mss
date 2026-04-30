@@ -1,6 +1,6 @@
 /**
- * Vercel Cron Job — 매일 08:00 KST (23:00 UTC 전날)
- * 업무일지 미작성자에게 이메일·SMS·카카오 알림 발송
+ * Vercel Cron Job — 매 평일 08:30 KST (23:30 UTC 전날)
+ * 업무일지 마감 시점에 미작성자에게 이메일·SMS·카카오 알림 발송
  *
  * 환경 변수 설정 필요:
  *   CRON_SECRET           — Vercel이 자동 생성 (대시보드에서 확인)
@@ -96,7 +96,7 @@ export async function GET(request: NextRequest) {
       source_module: 'project', // work_log 모듈이 없으면 project 사용
       ref_id: user.id,
       title: `[업무일지 미작성] ${user.name} ${user.position}`,
-      message: `${today} 업무일지가 작성되지 않았습니다. 오전 8:30까지 작성해 주세요.`,
+      message: `${today} 오전 8:30 마감 시점까지 업무일지가 작성되지 않았습니다. 가능한 빨리 작성해 주세요.`,
       priority: 'medium',
       target_user_id: user.id,
       is_read: false,
@@ -186,11 +186,11 @@ function buildEmailHtml(user: any, date: string) {
   </div>
   <div style="background:#fff;padding:28px;">
     <p style="font-size:15px;color:#111827;margin:0 0 20px;">${user.name} <span style="color:#6b7280;">${user.position}</span>님, 안녕하세요.</p>
-    <div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:10px;padding:18px 20px;margin-bottom:24px;">
-      <p style="font-size:14px;font-weight:700;color:#92400e;margin:0 0 8px;">📋 오늘 업무일지가 아직 작성되지 않았습니다</p>
-      <p style="font-size:13px;color:#92400e;margin:0;line-height:1.6;">
-        <strong>${date}</strong> 업무일지 마감 시간은 오전 <strong>8시 30분</strong>입니다.<br>
-        마감 전까지 꼭 작성해 주시기 바랍니다.
+    <div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:10px;padding:18px 20px;margin-bottom:24px;">
+      <p style="font-size:14px;font-weight:700;color:#991b1b;margin:0 0 8px;">🔔 업무일지 마감 시간이 지났습니다</p>
+      <p style="font-size:13px;color:#7f1d1d;margin:0;line-height:1.6;">
+        <strong>${date}</strong> 오전 <strong>8:30 마감</strong> 시점까지 업무일지가 작성되지 않았습니다.<br>
+        가능한 빨리 작성해 주시기 바랍니다.
       </p>
     </div>
     <a href="${appUrl}/worklogs" style="display:inline-block;background:#1A2744;color:#fff;text-decoration:none;padding:12px 24px;border-radius:10px;font-size:14px;font-weight:600;">
