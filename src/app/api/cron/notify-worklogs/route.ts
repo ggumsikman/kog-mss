@@ -3,17 +3,22 @@
  * 업무일지 미작성자에게 이메일·SMS·카카오 알림 발송
  *
  * 환경 변수 설정 필요:
- *   CRON_SECRET          — Vercel이 자동 생성 (대시보드에서 확인)
- *   RESEND_API_KEY       — 이메일 발송 (https://resend.com)
- *   NOTIFY_FROM_EMAIL    — 발신 이메일 주소 (예: noreply@kogintl.com)
- *   NEXT_PUBLIC_APP_URL  — 시스템 URL (예: https://kog-mss.vercel.app)
- *   SMS_API_KEY          — SMS 발송 API 키 (NHN Cloud / Aligo 등)
- *   KAKAO_API_KEY        — 카카오 알림톡 API 키 (NHN Cloud BizMessage)
+ *   CRON_SECRET           — Vercel이 자동 생성 (대시보드에서 확인)
+ *   NOTIFY_START_DATE     — 알림 발송 시작일 (YYYY-MM-DD, 미설정 시 기본값: 2026-05-06)
+ *                           이 날짜 이전에는 cron이 동작해도 메일이 나가지 않음
+ *   RESEND_API_KEY        — 이메일 발송 (https://resend.com)
+ *   NOTIFY_FROM_EMAIL     — 발신 이메일 주소 (예: noreply@kogintl.com)
+ *   NEXT_PUBLIC_APP_URL   — 시스템 URL (예: https://kog-mss.vercel.app)
+ *   SMS_API_KEY           — SMS 발송 API 키 (NHN Cloud / Aligo 등) — 미구현
+ *   KAKAO_API_KEY         — 카카오 알림톡 API 키 (NHN Cloud BizMessage) — 미구현
  */
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { checkRestDay } from '@/lib/holidays'
+
+// 기본 발송 시작일 — 환경변수로 덮어쓰기 가능
+const DEFAULT_NOTIFY_START_DATE = '2026-05-06'
 
 // GET /api/cron/notify-worklogs
 export async function GET(request: NextRequest) {
@@ -26,6 +31,18 @@ export async function GET(request: NextRequest) {
   // ── 오늘 날짜 (KST) ──────────────────────────────────────
   const kstNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }))
   const today  = `${kstNow.getFullYear()}-${String(kstNow.getMonth()+1).padStart(2,'0')}-${String(kstNow.getDate()).padStart(2,'0')}`
+
+  // ── 발송 시작일 게이트 ──────────────────────────────────
+  // 정식 운영 시작 전에는 cron이 동작해도 이메일을 보내지 않음
+  const startDate = process.env.NOTIFY_START_DATE || DEFAULT_NOTIFY_START_DATE
+  if (today < startDate) {
+    return NextResponse.json({
+      message: `📭 알림 발송 비활성 기간 (${today} < ${startDate})`,
+      hint: '정식 운영 시작일 이후 자동 발송됩니다. 변경하려면 NOTIFY_START_DATE 환경변수 설정.',
+      startDate,
+      today,
+    })
+  }
 
   // ── 쉬는 날 확인 ─────────────────────────────────────────
   const { isRest, label: restLabel } = checkRestDay(today)
